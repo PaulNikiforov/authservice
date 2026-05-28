@@ -1,0 +1,19 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  liquibase:
+    enabled: true
+
+jwt:
+  secret: testsecretkey1234567890abcdefghij
+  access-expiration: 900000
+  refresh-expiration: 604800000
+
+logging:
+  level:
+    com.innowise.authservice: DEBUG
