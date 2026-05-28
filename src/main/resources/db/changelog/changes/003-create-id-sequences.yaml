@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-id-sequences
+      author: authservice
+      comment: >-
+        Sequences for entity ids. incrementBy=50 matches Hibernate's
+        @SequenceGenerator(allocationSize=50) — without this the pooled
+        optimizer would hand out colliding in-memory id batches.
+      changes:
+        - createSequence:
+            sequenceName: credentials_id_seq
+            startValue: 1
+            incrementBy: 50
+        - createSequence:
+            sequenceName: refresh_tokens_id_seq
+            startValue: 1
+            incrementBy: 50
