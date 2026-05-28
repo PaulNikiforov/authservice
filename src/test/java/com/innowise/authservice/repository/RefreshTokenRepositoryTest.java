@@ -22,33 +22,36 @@ class RefreshTokenRepositoryTest {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
+    private RefreshToken createRefreshToken(String hash, Long userId) {
+        RefreshToken t = new RefreshToken();
+        t.setTokenHash(hash);
+        t.setUserId(userId);
+        t.setExpiresAt(LocalDateTime.now().plusDays(7));
+        return t;
+    }
+
     @Test
     void findByTokenHash_shouldReturnSavedToken() {
-        RefreshToken token = new RefreshToken();
-        token.setTokenHash("sha256hash_abc123");
-        token.setUserId(10L);
-        token.setExpiresAt(LocalDateTime.now().plusDays(7));
-        refreshTokenRepository.save(token);
+        refreshTokenRepository.save(createRefreshToken("sha256hash_abc123", 10L));
 
         RefreshToken found = refreshTokenRepository.findByTokenHash("sha256hash_abc123").orElseThrow();
 
         assertThat(found.getTokenHash()).isEqualTo("sha256hash_abc123");
         assertThat(found.getUserId()).isEqualTo(10L);
+        assertThat(found.getExpiresAt()).isNotNull();
+    }
+
+    @Test
+    void findByTokenHash_shouldReturnEmpty_whenNotFound() {
+        assertThat(refreshTokenRepository.findByTokenHash("nonexistent")).isEmpty();
     }
 
     @Test
     void deleteAllByUserId_shouldRemoveAllTokensForUser() {
-        RefreshToken t1 = new RefreshToken();
-        t1.setTokenHash("hash_session1");
-        t1.setUserId(20L);
-        t1.setExpiresAt(LocalDateTime.now().plusDays(7));
-
-        RefreshToken t2 = new RefreshToken();
-        t2.setTokenHash("hash_session2");
-        t2.setUserId(20L);
-        t2.setExpiresAt(LocalDateTime.now().plusDays(7));
-
-        refreshTokenRepository.saveAll(List.of(t1, t2));
+        refreshTokenRepository.saveAll(List.of(
+                createRefreshToken("hash_session1", 20L),
+                createRefreshToken("hash_session2", 20L)
+        ));
 
         refreshTokenRepository.deleteAllByUserId(20L);
 
@@ -57,18 +60,16 @@ class RefreshTokenRepositoryTest {
     }
 
     @Test
+    void deleteAllByUserId_shouldNotThrow_whenNoTokens() {
+        refreshTokenRepository.deleteAllByUserId(999L);
+    }
+
+    @Test
     void deleteByTokenHash_shouldRemoveOnlyMatchingToken() {
-        RefreshToken target = new RefreshToken();
-        target.setTokenHash("hash_to_delete");
-        target.setUserId(30L);
-        target.setExpiresAt(LocalDateTime.now().plusDays(7));
-
-        RefreshToken other = new RefreshToken();
-        other.setTokenHash("hash_to_keep");
-        other.setUserId(30L);
-        other.setExpiresAt(LocalDateTime.now().plusDays(7));
-
-        refreshTokenRepository.saveAll(List.of(target, other));
+        refreshTokenRepository.saveAll(List.of(
+                createRefreshToken("hash_to_delete", 30L),
+                createRefreshToken("hash_to_keep", 30L)
+        ));
 
         refreshTokenRepository.deleteByTokenHash("hash_to_delete");
 
@@ -78,14 +79,11 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void createdAt_shouldBePopulatedOnSave() {
-        RefreshToken token = new RefreshToken();
-        token.setTokenHash("hash_audit");
-        token.setUserId(40L);
-        token.setExpiresAt(LocalDateTime.now().plusDays(7));
-        refreshTokenRepository.save(token);
+        refreshTokenRepository.save(createRefreshToken("hash_audit", 40L));
 
         RefreshToken found = refreshTokenRepository.findByTokenHash("hash_audit").orElseThrow();
 
         assertThat(found.getCreatedAt()).isNotNull();
+        assertThat(found.getExpiresAt()).isAfter(LocalDateTime.now());
     }
 }

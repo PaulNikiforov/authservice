@@ -13,12 +13,12 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     Optional<RefreshToken> findByTokenHash(String tokenHash);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("DELETE FROM RefreshToken rt WHERE rt.userId = :userId")
     void deleteAllByUserId(@Param("userId") Long userId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("DELETE FROM RefreshToken rt WHERE rt.tokenHash = :tokenHash")
     void deleteByTokenHash(@Param("tokenHash") String tokenHash);

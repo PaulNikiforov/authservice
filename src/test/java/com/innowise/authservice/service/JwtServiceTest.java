@@ -1,6 +1,7 @@
 package com.innowise.authservice.service;
 
 import com.innowise.authservice.exception.InvalidTokenException;
+import com.innowise.authservice.exception.TokenException;
 import com.innowise.authservice.exception.TokenExpiredException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,12 +21,13 @@ class JwtServiceTest {
 
     private static final String SECRET = "testsecretkey1234567890abcdefghij";
     private static final long ACCESS_EXPIRATION = 900_000L;
+    private static final long REFRESH_EXPIRATION = 604_800_000L;
 
     private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService(SECRET, ACCESS_EXPIRATION);
+        jwtService = new JwtService(SECRET, ACCESS_EXPIRATION, REFRESH_EXPIRATION);
     }
 
     @Test
@@ -41,15 +44,6 @@ class JwtServiceTest {
         assertThat(claims.getSubject()).isEqualTo("42");
         assertThat(claims.get("role", String.class)).isEqualTo("ADMIN");
         assertThat(claims.getExpiration()).isNotNull();
-    }
-
-    @Test
-    void generateRefreshToken_shouldReturnNonBlankUuid() {
-        String token1 = jwtService.generateRefreshToken();
-        String token2 = jwtService.generateRefreshToken();
-
-        assertThat(token1).isNotBlank();
-        assertThat(token1).isNotEqualTo(token2);
     }
 
     @Test
@@ -77,6 +71,13 @@ class JwtServiceTest {
     }
 
     @Test
+    void tokenExceptions_shouldFollowSealedHierarchy() {
+        assertThat(TokenException.class).isSealed();
+        assertThat(TokenExpiredException.class).isAssignableTo(TokenException.class);
+        assertThat(InvalidTokenException.class).isAssignableTo(TokenException.class);
+    }
+
+    @Test
     void extractUserId_shouldReturnCorrectId() {
         String token = jwtService.generateAccessToken(99L, "USER");
         assertThat(jwtService.extractUserId(token)).isEqualTo(99L);
@@ -86,5 +87,12 @@ class JwtServiceTest {
     void extractRole_shouldReturnCorrectRole() {
         String token = jwtService.generateAccessToken(1L, "ADMIN");
         assertThat(jwtService.extractRole(token)).isEqualTo("ADMIN");
+    }
+
+    @Test
+    void calculateRefreshExpiresAt_shouldBeInTheFuture() {
+        LocalDateTime expiresAt = jwtService.calculateRefreshExpiresAt();
+
+        assertThat(expiresAt).isAfter(LocalDateTime.now());
     }
 }

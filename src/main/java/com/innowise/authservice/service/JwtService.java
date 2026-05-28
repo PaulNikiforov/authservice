@@ -12,35 +12,39 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
-import java.util.UUID;
 
 @Service
 public class JwtService {
 
     private final SecretKey signingKey;
     private final long accessExpiration;
+    private final long refreshExpiration;
 
     public JwtService(@Value("${jwt.secret}") String secret,
-                      @Value("${jwt.access-expiration}") long accessExpiration) {
+                      @Value("${jwt.access-expiration}") long accessExpiration,
+                      @Value("${jwt.refresh-expiration}") long refreshExpiration) {
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessExpiration = accessExpiration;
+        this.refreshExpiration = refreshExpiration;
     }
 
     public String generateAccessToken(Long userId, String role) {
-        Date now = new Date();
-        Date expiration = new Date(now.getTime() + accessExpiration);
+        Instant now = Instant.now();
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("role", role)
-                .issuedAt(now)
-                .expiration(expiration)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(accessExpiration)))
                 .signWith(signingKey)
                 .compact();
     }
 
-    public String generateRefreshToken() {
-        return UUID.randomUUID().toString();
+    public LocalDateTime calculateRefreshExpiresAt() {
+        return LocalDateTime.ofInstant(Instant.now().plusMillis(refreshExpiration), ZoneId.of("UTC"));
     }
 
     public Claims validateTokenOrThrow(String token) {

@@ -20,7 +20,7 @@ spring:
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
-    enabled: ${LIQUIBASE_ENABLED:true}
+    enabled: true
 
 jwt:
   secret: ${JWT_SECRET}
@@ -30,4 +30,4 @@ jwt:
 admin:
   email: ${ADMIN_EMAIL:}
   password: ${ADMIN_PASSWORD:}
-  user-id: ${ADMIN_USER_ID:}
+  user-id: ${ADMIN_USER_ID:0}

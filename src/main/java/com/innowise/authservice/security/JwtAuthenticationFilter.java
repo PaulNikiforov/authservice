@@ -9,6 +9,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +24,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String ROLE_PREFIX = "ROLE_";
+
     private final JwtService jwtService;
 
     @Override
@@ -30,8 +36,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+            String token = authHeader.substring(BEARER_PREFIX.length());
             try {
                 Claims claims = jwtService.validateTokenOrThrow(token);
                 Long userId = Long.parseLong(claims.getSubject());
@@ -41,11 +47,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(
                                 userId,
                                 null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                List.of(new SimpleGrantedAuthority(ROLE_PREFIX + role))
                         );
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (InvalidTokenException | TokenExpiredException ignored) {
-                // invalid or expired token — continue chain without setting authentication
+            } catch (InvalidTokenException | TokenExpiredException e) {
+                log.debug("Invalid JWT in {}: {}", request.getRequestURI(), e.getMessage());
             }
         }
 

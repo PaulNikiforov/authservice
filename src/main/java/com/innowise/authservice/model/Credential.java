@@ -15,8 +15,10 @@ import java.time.LocalDateTime;
 @Table(name = "credentials")
 @SequenceGenerator(name = "entity_seq", sequenceName = "credentials_id_seq", allocationSize = 50)
 @Getter
-@Setter
+@Setter(AccessLevel.NONE)
 public class Credential extends BaseEntity {
+
+    public static final String DEFAULT_ROLE = "USER";
 
     @Column(name = "user_id", unique = true, nullable = false)
     private Long userId;
@@ -28,13 +30,22 @@ public class Credential extends BaseEntity {
     private String passwordHash;
 
     @Column(name = "role", nullable = false, length = 20)
-    private String role = "USER";
+    private String role = DEFAULT_ROLE;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
-    @Setter(AccessLevel.NONE)
     private LocalDateTime updatedAt;
+
+    // updated_at is set by JPA auditing — must not be mutated externally
+    // but JPA needs field-level access, so no @Setter override needed here
+    // (class-level @Setter(NONE) already blocks Lombok setters)
+
+    public void setUserId(Long userId) { this.userId = userId; }
+    public void setEmail(String email) { this.email = email; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setRole(String role) { this.role = role; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 }

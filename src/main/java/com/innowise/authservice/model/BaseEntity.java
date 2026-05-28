@@ -14,6 +14,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+// Subclasses MUST define @SequenceGenerator(name = "entity_seq", sequenceName = "<table>_id_seq")
+// to override the shared generator with a per-table sequence.
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Getter

@@ -1,6 +1,7 @@
 package com.innowise.authservice.exception;
 
-public class InvalidTokenException extends RuntimeException {
+public non-sealed class InvalidTokenException extends TokenException {
+
     public InvalidTokenException(String message) {
         super(message);
     }

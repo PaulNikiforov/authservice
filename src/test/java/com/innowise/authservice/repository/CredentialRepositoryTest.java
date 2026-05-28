@@ -19,13 +19,17 @@ class CredentialRepositoryTest {
     @Autowired
     private CredentialRepository credentialRepository;
 
+    private Credential createCredential(Long userId, String email) {
+        Credential c = new Credential();
+        c.setUserId(userId);
+        c.setEmail(email);
+        c.setPasswordHash("hashed_password");
+        return c;
+    }
+
     @Test
     void findByEmail_shouldReturnSavedCredential() {
-        Credential credential = new Credential();
-        credential.setUserId(1L);
-        credential.setEmail("test@example.com");
-        credential.setPasswordHash("hashed_password");
-        credentialRepository.save(credential);
+        credentialRepository.save(createCredential(1L, "test@example.com"));
 
         Credential found = credentialRepository.findByEmail("test@example.com").orElseThrow();
 
@@ -33,12 +37,13 @@ class CredentialRepositoryTest {
     }
 
     @Test
+    void findByEmail_shouldReturnEmpty_whenNotFound() {
+        assertThat(credentialRepository.findByEmail("missing@example.com")).isEmpty();
+    }
+
+    @Test
     void findByUserId_shouldReturnCredential() {
-        Credential credential = new Credential();
-        credential.setUserId(42L);
-        credential.setEmail("user42@example.com");
-        credential.setPasswordHash("hashed_password");
-        credentialRepository.save(credential);
+        credentialRepository.save(createCredential(42L, "user42@example.com"));
 
         Credential found = credentialRepository.findByUserId(42L).orElseThrow();
 
@@ -46,28 +51,29 @@ class CredentialRepositoryTest {
     }
 
     @Test
-    void existsByEmail_shouldReturnTrue() {
-        Credential credential = new Credential();
-        credential.setUserId(2L);
-        credential.setEmail("exists@example.com");
-        credential.setPasswordHash("hashed_password");
-        credentialRepository.save(credential);
-
-        boolean exists = credentialRepository.existsByEmail("exists@example.com");
-
-        assertThat(exists).isTrue();
+    void findByUserId_shouldReturnEmpty_whenNotFound() {
+        assertThat(credentialRepository.findByUserId(999L)).isEmpty();
     }
 
     @Test
-    void createdAt_shouldBePopulatedOnSave() {
-        Credential credential = new Credential();
-        credential.setUserId(3L);
-        credential.setEmail("audit@example.com");
-        credential.setPasswordHash("hashed_password");
-        credentialRepository.save(credential);
+    void existsByEmail_shouldReturnTrue() {
+        credentialRepository.save(createCredential(2L, "exists@example.com"));
+
+        assertThat(credentialRepository.existsByEmail("exists@example.com")).isTrue();
+    }
+
+    @Test
+    void existsByEmail_shouldReturnFalse_whenNotFound() {
+        assertThat(credentialRepository.existsByEmail("missing@example.com")).isFalse();
+    }
+
+    @Test
+    void auditingFields_shouldBePopulatedOnSave() {
+        credentialRepository.save(createCredential(3L, "audit@example.com"));
 
         Credential found = credentialRepository.findByEmail("audit@example.com").orElseThrow();
 
         assertThat(found.getCreatedAt()).isNotNull();
+        assertThat(found.getUpdatedAt()).isNotNull();
     }
 }

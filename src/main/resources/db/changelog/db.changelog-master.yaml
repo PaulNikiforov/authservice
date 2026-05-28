@@ -1,10 +1,10 @@
 databaseChangeLog:
   - include:
+      file: changes/003-create-id-sequences.yaml
+      relativeToChangelogFile: true
+  - include:
       file: changes/001-create-credentials-table.yaml
       relativeToChangelogFile: true
   - include:
       file: changes/002-create-refresh-tokens-table.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changes/003-create-id-sequences.yaml
       relativeToChangelogFile: true

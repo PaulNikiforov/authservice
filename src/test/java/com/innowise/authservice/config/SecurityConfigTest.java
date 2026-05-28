@@ -17,12 +17,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TestcontainersConfiguration.class)
 class SecurityConfigTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    private final MockMvc mockMvc;
+
+    SecurityConfigTest(@Autowired MockMvc mockMvc) {
+        this.mockMvc = mockMvc;
+    }
 
     @Test
     void authEndpoints_shouldNotReturn401() throws Exception {
-        // No controller yet → 404. Security must NOT block /auth/** with 401.
         mockMvc.perform(post("/auth/login"))
                 .andExpect(status().isNotFound());
     }

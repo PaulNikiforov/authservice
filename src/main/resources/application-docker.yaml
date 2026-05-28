@@ -1,6 +1,3 @@
 spring:
   datasource:
     url: jdbc:postgresql://auth-db:${DB_PORT:5432}/${DB_NAME}
-
-  jpa:
-    show-sql: false

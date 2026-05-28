@@ -12,6 +12,4 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
     Optional<Credential> findByUserId(Long userId);
 
     boolean existsByEmail(String email);
-
-    boolean existsByRole(String role);
 }

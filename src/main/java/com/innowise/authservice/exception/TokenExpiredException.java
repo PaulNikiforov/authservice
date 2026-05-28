@@ -1,6 +1,7 @@
 package com.innowise.authservice.exception;
 
-public class TokenExpiredException extends RuntimeException {
+public non-sealed class TokenExpiredException extends TokenException {
+
     public TokenExpiredException(String message) {
         super(message);
     }

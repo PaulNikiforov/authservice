@@ -11,8 +11,8 @@
 	<groupId>com.innowise</groupId>
 	<artifactId>authservice</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>authservice</name>
+	<description>Authentication Service</description>
 	<properties>
 		<java.version>21</java.version>
 		<mapstruct.version>1.6.3</mapstruct.version>

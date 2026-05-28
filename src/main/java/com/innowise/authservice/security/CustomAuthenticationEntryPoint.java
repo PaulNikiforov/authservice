@@ -1,5 +1,6 @@
 package com.innowise.authservice.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
@@ -7,15 +8,25 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Map;
 
 @Component
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\":\"Unauthorized\"}");
+        response.setContentType("application/json;charset=UTF-8");
+        OBJECT_MAPPER.writeValue(response.getOutputStream(), Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", 401,
+                "error", "Unauthorized",
+                "message", "Full authentication is required",
+                "path", request.getRequestURI()
+        ));
     }
 }
