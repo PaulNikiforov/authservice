@@ -3,6 +3,7 @@ package com.innowise.authservice.config;
 import com.innowise.authservice.security.CustomAccessDeniedHandler;
 import com.innowise.authservice.security.CustomAuthenticationEntryPoint;
 import com.innowise.authservice.security.JwtAuthenticationFilter;
+import com.innowise.authservice.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtService jwtService;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
@@ -36,7 +37,8 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService),
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

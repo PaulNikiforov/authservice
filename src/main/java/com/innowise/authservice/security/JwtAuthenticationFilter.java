@@ -14,13 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
 
-@Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -40,8 +38,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(BEARER_PREFIX.length());
             try {
                 Claims claims = jwtService.validateTokenOrThrow(token);
-                Long userId = Long.parseLong(claims.getSubject());
+                Long userId = jwtService.extractUserId(claims);
                 String role = claims.get("role", String.class);
+
+                if (role == null) {
+                    throw new InvalidTokenException("Token is missing the 'role' claim");
+                }
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(

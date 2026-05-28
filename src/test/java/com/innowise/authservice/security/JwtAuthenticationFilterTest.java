@@ -16,13 +16,12 @@ import static org.mockito.Mockito.verify;
 class JwtAuthenticationFilterTest {
 
     private static final String SECRET = "testsecretkey1234567890abcdefghij";
-    private static final long REFRESH_EXPIRATION = 604_800_000L;
     private JwtService jwtService;
     private JwtAuthenticationFilter filter;
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService(SECRET, 900_000L, REFRESH_EXPIRATION);
+        jwtService = new JwtService(SECRET, 900_000L);
         filter = new JwtAuthenticationFilter(jwtService);
         SecurityContextHolder.clearContext();
     }

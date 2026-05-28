@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,13 +20,12 @@ class JwtServiceTest {
 
     private static final String SECRET = "testsecretkey1234567890abcdefghij";
     private static final long ACCESS_EXPIRATION = 900_000L;
-    private static final long REFRESH_EXPIRATION = 604_800_000L;
 
     private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService(SECRET, ACCESS_EXPIRATION, REFRESH_EXPIRATION);
+        jwtService = new JwtService(SECRET, ACCESS_EXPIRATION);
     }
 
     @Test
@@ -78,21 +76,45 @@ class JwtServiceTest {
     }
 
     @Test
-    void extractUserId_shouldReturnCorrectId() {
-        String token = jwtService.generateAccessToken(99L, "USER");
-        assertThat(jwtService.extractUserId(token)).isEqualTo(99L);
+    void extractUserId_fromClaims_returnsCorrectId() {
+        Claims claims = jwtService.validateTokenOrThrow(jwtService.generateAccessToken(99L, "USER"));
+        assertThat(jwtService.extractUserId(claims)).isEqualTo(99L);
     }
 
     @Test
-    void extractRole_shouldReturnCorrectRole() {
-        String token = jwtService.generateAccessToken(1L, "ADMIN");
-        assertThat(jwtService.extractRole(token)).isEqualTo("ADMIN");
+    void extractUserId_fromClaimsWithNonNumericSubject_throwsInvalidToken() {
+        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+        Claims claims = Jwts.parser().verifyWith(key).build()
+                .parseSignedClaims(Jwts.builder().subject("not-a-number").signWith(key).compact())
+                .getPayload();
+
+        assertThatThrownBy(() -> jwtService.extractUserId(claims))
+                .isInstanceOf(InvalidTokenException.class);
     }
 
     @Test
-    void calculateRefreshExpiresAt_shouldBeInTheFuture() {
-        LocalDateTime expiresAt = jwtService.calculateRefreshExpiresAt();
+    void extractUserIdLenient_withValidToken_returnsUserId() {
+        String token = jwtService.generateAccessToken(42L, "USER");
+        assertThat(jwtService.extractUserIdLenient(token)).isEqualTo(42L);
+    }
 
-        assertThat(expiresAt).isAfter(LocalDateTime.now());
+    @Test
+    void extractUserIdLenient_withExpiredToken_returnsUserId() {
+        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+        String expiredToken = Jwts.builder()
+                .subject("77")
+                .claim("role", "USER")
+                .issuedAt(new Date(System.currentTimeMillis() - 10_000))
+                .expiration(new Date(System.currentTimeMillis() - 5_000))
+                .signWith(key)
+                .compact();
+
+        assertThat(jwtService.extractUserIdLenient(expiredToken)).isEqualTo(77L);
+    }
+
+    @Test
+    void extractUserIdLenient_withInvalidToken_throwsInvalidTokenException() {
+        assertThatThrownBy(() -> jwtService.extractUserIdLenient("garbage.token.here"))
+                .isInstanceOf(InvalidTokenException.class);
     }
 }

@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 
 @Service
@@ -22,14 +20,11 @@ public class JwtService {
 
     private final SecretKey signingKey;
     private final long accessExpiration;
-    private final long refreshExpiration;
 
     public JwtService(@Value("${jwt.secret}") String secret,
-                      @Value("${jwt.access-expiration}") long accessExpiration,
-                      @Value("${jwt.refresh-expiration}") long refreshExpiration) {
+                      @Value("${jwt.access-expiration}") long accessExpiration) {
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessExpiration = accessExpiration;
-        this.refreshExpiration = refreshExpiration;
     }
 
     public String generateAccessToken(Long userId, String role) {
@@ -41,10 +36,6 @@ public class JwtService {
                 .expiration(Date.from(now.plusMillis(accessExpiration)))
                 .signWith(signingKey)
                 .compact();
-    }
-
-    public LocalDateTime calculateRefreshExpiresAt() {
-        return LocalDateTime.ofInstant(Instant.now().plusMillis(refreshExpiration), ZoneId.of("UTC"));
     }
 
     public Claims validateTokenOrThrow(String token) {
@@ -61,11 +52,27 @@ public class JwtService {
         }
     }
 
-    public Long extractUserId(String token) {
-        return Long.parseLong(validateTokenOrThrow(token).getSubject());
+    public Long extractUserId(Claims claims) {
+        try {
+            return Long.parseLong(claims.getSubject());
+        } catch (NumberFormatException e) {
+            throw new InvalidTokenException("Token subject is not a valid user id");
+        }
     }
 
-    public String extractRole(String token) {
-        return validateTokenOrThrow(token).get("role", String.class);
+    public Long extractUserIdLenient(String token) {
+        Claims claims;
+        try {
+            claims = Jwts.parser()
+                    .verifyWith(signingKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            claims = e.getClaims();
+        } catch (JwtException e) {
+            throw new InvalidTokenException("Invalid token: " + e.getMessage());
+        }
+        return extractUserId(claims);
     }
 }

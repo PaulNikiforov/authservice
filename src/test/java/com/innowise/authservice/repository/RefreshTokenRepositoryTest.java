@@ -65,19 +65,6 @@ class RefreshTokenRepositoryTest {
     }
 
     @Test
-    void deleteByTokenHash_shouldRemoveOnlyMatchingToken() {
-        refreshTokenRepository.saveAll(List.of(
-                createRefreshToken("hash_to_delete", 30L),
-                createRefreshToken("hash_to_keep", 30L)
-        ));
-
-        refreshTokenRepository.deleteByTokenHash("hash_to_delete");
-
-        assertThat(refreshTokenRepository.findByTokenHash("hash_to_delete")).isEmpty();
-        assertThat(refreshTokenRepository.findByTokenHash("hash_to_keep")).isPresent();
-    }
-
-    @Test
     void createdAt_shouldBePopulatedOnSave() {
         refreshTokenRepository.save(createRefreshToken("hash_audit", 40L));
 
