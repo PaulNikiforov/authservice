@@ -30,4 +30,5 @@ jwt:
 admin:
   email: ${ADMIN_EMAIL:}
   password: ${ADMIN_PASSWORD:}
-  user-id: ${ADMIN_USER_ID:0}
+  # Empty default so partial config is detectable (all three or none). Reserved id is 1 — see Decision 10.
+  user-id: ${ADMIN_USER_ID:}

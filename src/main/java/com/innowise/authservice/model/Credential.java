@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 public class Credential extends BaseEntity {
 
     public static final String DEFAULT_ROLE = "USER";
+    public static final String ROLE_ADMIN = "ADMIN";
 
     @Column(name = "user_id", unique = true, nullable = false)
     private Long userId;
@@ -40,4 +41,14 @@ public class Credential extends BaseEntity {
     @Column(name = "updated_at", nullable = false)
     @Setter(AccessLevel.NONE)
     private LocalDateTime updatedAt;
+
+    /** Builds a credential with the given fields; {@code isActive} defaults to true, audit fields are set on persist. */
+    public static Credential of(Long userId, String email, String passwordHash, String role) {
+        Credential credential = new Credential();
+        credential.setUserId(userId);
+        credential.setEmail(email);
+        credential.setPasswordHash(passwordHash);
+        credential.setRole(role);
+        return credential;
+    }
 }

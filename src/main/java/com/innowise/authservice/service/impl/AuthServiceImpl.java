@@ -62,11 +62,8 @@ public class AuthServiceImpl implements AuthService {
             throw new UserAlreadyExistsException("User already has credentials");
         }
 
-        Credential credential = new Credential();
-        credential.setUserId(request.userId());
-        credential.setEmail(request.email());
-        credential.setPasswordHash(passwordEncoder.encode(request.password()));
-        credential.setRole(Credential.DEFAULT_ROLE);
+        Credential credential = Credential.of(request.userId(), request.email(),
+                passwordEncoder.encode(request.password()), Credential.DEFAULT_ROLE);
         credentialRepository.save(credential);
 
         return generateTokenPair(credential.getUserId(), credential.getRole());
