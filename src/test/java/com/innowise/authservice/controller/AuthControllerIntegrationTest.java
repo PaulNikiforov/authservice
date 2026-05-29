@@ -6,12 +6,13 @@ import com.innowise.authservice.model.Credential;
 import com.innowise.authservice.model.RefreshToken;
 import com.innowise.authservice.repository.CredentialRepository;
 import com.innowise.authservice.repository.RefreshTokenRepository;
-import com.innowise.authservice.service.dto.LoginRequest;
-import com.innowise.authservice.service.dto.LoginResponse;
-import com.innowise.authservice.service.dto.RefreshRequest;
-import com.innowise.authservice.service.dto.SaveCredentialsRequest;
-import com.innowise.authservice.service.dto.TokenResponse;
-import com.innowise.authservice.service.dto.ValidateRequest;
+import com.innowise.authservice.service.JwtService;
+import com.innowise.authservice.model.dto.LoginRequest;
+import com.innowise.authservice.model.dto.LoginResponse;
+import com.innowise.authservice.model.dto.RefreshRequest;
+import com.innowise.authservice.model.dto.SaveCredentialsRequest;
+import com.innowise.authservice.model.dto.TokenResponse;
+import com.innowise.authservice.model.dto.ValidateRequest;
 import com.innowise.authservice.util.TokenHasher;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -20,7 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -51,17 +51,13 @@ class AuthControllerIntegrationTest {
     private CredentialRepository credentialRepository;
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
-
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
-    private SecretKey signingKey;
+    @Autowired
+    private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
         refreshTokenRepository.deleteAll();
         credentialRepository.deleteAll();
-        signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
     @Nested
@@ -69,13 +65,11 @@ class AuthControllerIntegrationTest {
 
         @Test
         void shouldWorkEndToEnd() throws Exception {
-            // 1. Save credentials
             performSave(100L, "flow@int.test", "password123")
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.accessToken").isNotEmpty())
                     .andExpect(jsonPath("$.refreshToken").isNotEmpty());
 
-            // 2. Login
             MvcResult loginResult = performLogin("flow@int.test", "password123")
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.userId").value(100))
@@ -83,7 +77,6 @@ class AuthControllerIntegrationTest {
                     .andReturn();
             LoginResponse loginResp = body(loginResult, LoginResponse.class);
 
-            // 3. Refresh
             MvcResult refreshResult = performRefresh(loginResp.refreshToken())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.accessToken").isNotEmpty())
@@ -91,18 +84,15 @@ class AuthControllerIntegrationTest {
                     .andReturn();
             TokenResponse refreshTokens = body(refreshResult, TokenResponse.class);
 
-            // 4. Validate
             performValidate(refreshTokens.accessToken())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.userId").value(100))
                     .andExpect(jsonPath("$.role").value("USER"));
 
-            // 5. Logout
             mockMvc.perform(post("/auth/logout")
                             .header("Authorization", "Bearer " + refreshTokens.accessToken()))
                     .andExpect(status().isOk());
 
-            // 6. Refresh with the rotated token — should fail (all tokens deleted on logout)
             performRefresh(refreshTokens.refreshToken())
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.status").value(401))
@@ -212,19 +202,13 @@ class AuthControllerIntegrationTest {
                     .andExpect(status().isCreated()).andReturn();
             String accessToken = body(result, TokenResponse.class).accessToken();
 
-            Claims claims = Jwts.parser()
-                    .verifyWith(signingKey)
-                    .build()
-                    .parseSignedClaims(accessToken)
-                    .getPayload();
+            Claims claims = jwtService.validateTokenOrThrow(accessToken);
 
             assertThat(claims.getSubject()).isEqualTo("600");
             assertThat(Long.parseLong(claims.getSubject())).isEqualTo(600L);
             assertThat(claims.get("role", String.class)).isEqualTo("USER");
         }
     }
-
-    // --- Helpers ---
 
     private ResultActions performSave(Long userId, String email, String password) throws Exception {
         SaveCredentialsRequest request = new SaveCredentialsRequest(userId, email, password);

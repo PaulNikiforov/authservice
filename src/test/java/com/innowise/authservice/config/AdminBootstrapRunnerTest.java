@@ -31,7 +31,8 @@ class AdminBootstrapRunnerTest {
     }
 
     private AdminBootstrapRunner runner(String email, String password, String userId) {
-        return new AdminBootstrapRunner(credentialRepository, passwordEncoder, email, password, userId);
+        return new AdminBootstrapRunner(credentialRepository, passwordEncoder,
+                new AdminProperties(email, password, userId));
     }
 
     private static ApplicationArguments args() {
@@ -40,7 +41,6 @@ class AdminBootstrapRunnerTest {
 
     @Test
     void run_whenNoEnvVarsSet_shouldDisableBootstrap() {
-        // @Value("${...:}") yields "" (not null) when properties are absent.
         runner("", "", "").run(args());
 
         verifyNoInteractions(credentialRepository, passwordEncoder);

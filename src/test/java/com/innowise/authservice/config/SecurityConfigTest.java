@@ -26,8 +26,6 @@ class SecurityConfigTest {
 
     @Test
     void authEndpoints_shouldNotReturn401() throws Exception {
-        // /auth/** is permitAll: an invalid body reaches the controller and is rejected
-        // by validation (400) — proving security did NOT block the request with 401.
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))

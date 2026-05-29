@@ -3,17 +3,12 @@ package com.innowise.authservice.config;
 import com.innowise.authservice.model.Credential;
 import com.innowise.authservice.repository.CredentialRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-/**
- * Creates the admin credential on startup from {@code ADMIN_*} configuration.
- * See 04-decisions-log.md, Decision 2 + Decision 10.
- */
 @Slf4j
 @Component
 public class AdminBootstrapRunner implements ApplicationRunner {
@@ -26,14 +21,12 @@ public class AdminBootstrapRunner implements ApplicationRunner {
 
     public AdminBootstrapRunner(CredentialRepository credentialRepository,
                                 PasswordEncoder passwordEncoder,
-                                @Value("${admin.email:}") String adminEmail,
-                                @Value("${admin.password:}") String adminPassword,
-                                @Value("${admin.user-id:}") String adminUserId) {
+                                AdminProperties adminProperties) {
         this.credentialRepository = credentialRepository;
         this.passwordEncoder = passwordEncoder;
-        this.adminEmail = adminEmail;
-        this.adminPassword = adminPassword;
-        this.adminUserId = adminUserId;
+        this.adminEmail = adminProperties.email();
+        this.adminPassword = adminProperties.password();
+        this.adminUserId = adminProperties.userId();
     }
 
     @Override
@@ -46,7 +39,6 @@ public class AdminBootstrapRunner implements ApplicationRunner {
             log.info("Admin bootstrap disabled: ADMIN_EMAIL/ADMIN_PASSWORD/ADMIN_USER_ID not set");
             return;
         }
-        // Partial config is a misconfiguration, not a "skip" case — fail fast.
         if (!(emailSet && passwordSet && userIdSet)) {
             throw new IllegalStateException(
                     "Admin bootstrap misconfigured: ADMIN_EMAIL, ADMIN_PASSWORD and ADMIN_USER_ID "
@@ -72,7 +64,6 @@ public class AdminBootstrapRunner implements ApplicationRunner {
             credentialRepository.save(admin);
             log.info("Admin user created: email={}, userId={}", adminEmail, userId);
         } catch (DataIntegrityViolationException e) {
-            // Another instance won the race (unique email/user_id) — treat as already created.
             log.info("Admin bootstrap skipped: created concurrently by another instance ({})", adminEmail);
         }
     }

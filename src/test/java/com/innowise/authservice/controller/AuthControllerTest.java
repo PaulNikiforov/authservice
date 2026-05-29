@@ -1,15 +1,14 @@
 package com.innowise.authservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.innowise.authservice.exception.InvalidTokenException;
 import com.innowise.authservice.service.AuthService;
-import com.innowise.authservice.service.dto.LoginRequest;
-import com.innowise.authservice.service.dto.LoginResponse;
-import com.innowise.authservice.service.dto.RefreshRequest;
-import com.innowise.authservice.service.dto.SaveCredentialsRequest;
-import com.innowise.authservice.service.dto.TokenResponse;
-import com.innowise.authservice.service.dto.ValidateRequest;
-import com.innowise.authservice.service.dto.ValidationResponse;
+import com.innowise.authservice.model.dto.LoginRequest;
+import com.innowise.authservice.model.dto.LoginResponse;
+import com.innowise.authservice.model.dto.RefreshRequest;
+import com.innowise.authservice.model.dto.SaveCredentialsRequest;
+import com.innowise.authservice.model.dto.TokenResponse;
+import com.innowise.authservice.model.dto.ValidateRequest;
+import com.innowise.authservice.model.dto.ValidationResponse;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

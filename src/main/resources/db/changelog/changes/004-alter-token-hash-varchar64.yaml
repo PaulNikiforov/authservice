@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-alter-token-hash-varchar64
+      author: authservice
+      changes:
+        - modifyDataType:
+            tableName: refresh_tokens
+            columnName: token_hash
+            newDataType: VARCHAR(64)

@@ -8,15 +8,16 @@ import com.innowise.authservice.exception.UserDeactivatedException;
 import com.innowise.authservice.model.Credential;
 import com.innowise.authservice.model.RefreshToken;
 import com.innowise.authservice.repository.CredentialRepository;
+import com.innowise.authservice.config.JwtProperties;
 import com.innowise.authservice.repository.RefreshTokenRepository;
 import com.innowise.authservice.service.JwtService;
-import com.innowise.authservice.service.dto.LoginRequest;
-import com.innowise.authservice.service.dto.LoginResponse;
-import com.innowise.authservice.service.dto.RefreshRequest;
-import com.innowise.authservice.service.dto.SaveCredentialsRequest;
-import com.innowise.authservice.service.dto.TokenResponse;
-import com.innowise.authservice.service.dto.ValidateRequest;
-import com.innowise.authservice.service.dto.ValidationResponse;
+import com.innowise.authservice.model.dto.LoginRequest;
+import com.innowise.authservice.model.dto.LoginResponse;
+import com.innowise.authservice.model.dto.RefreshRequest;
+import com.innowise.authservice.model.dto.SaveCredentialsRequest;
+import com.innowise.authservice.model.dto.TokenResponse;
+import com.innowise.authservice.model.dto.ValidateRequest;
+import com.innowise.authservice.model.dto.ValidationResponse;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,15 +52,13 @@ class AuthServiceImplTest {
 
         authService = new AuthServiceImpl(
                 credentialRepository, refreshTokenRepository,
-                jwtService, passwordEncoder, 604_800_000L
+                jwtService, passwordEncoder, new JwtProperties("test-secret", 0L, 604_800_000L)
         );
 
         when(jwtService.generateAccessToken(any(), any())).thenReturn("access.token");
         when(credentialRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(refreshTokenRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
     }
-
-    // --- saveCredentials ---
 
     @Test
     void saveCredentials_shouldEncodePasswordAndReturnTokens() {
@@ -92,8 +91,6 @@ class AuthServiceImplTest {
         assertThatThrownBy(() -> authService.saveCredentials(request))
                 .isInstanceOf(UserAlreadyExistsException.class);
     }
-
-    // --- login ---
 
     @Test
     void login_shouldReturnTokensAndUserInfo() {
@@ -148,8 +145,6 @@ class AuthServiceImplTest {
         assertThatThrownBy(() -> authService.login(new LoginRequest("user@test.com", "password123")))
                 .isInstanceOf(UserDeactivatedException.class);
     }
-
-    // --- refresh ---
 
     @Test
     void refresh_shouldRotateTokenAndReturnNewPair() {
@@ -227,8 +222,6 @@ class AuthServiceImplTest {
                 .isInstanceOf(InvalidTokenException.class);
     }
 
-    // --- logout ---
-
     @Test
     void logout_shouldDeleteAllRefreshTokensForUser() {
         when(jwtService.extractUserIdLenient("access.token")).thenReturn(42L);
@@ -257,8 +250,6 @@ class AuthServiceImplTest {
 
         verifyNoInteractions(refreshTokenRepository);
     }
-
-    // --- validate ---
 
     @Test
     void validate_shouldReturnUserIdAndRole() {

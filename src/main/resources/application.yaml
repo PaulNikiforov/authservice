@@ -1,4 +1,3 @@
-# Requires a profile: local (host DB) or docker (container DB)
 spring:
   application:
     name: authservice
@@ -30,5 +29,4 @@ jwt:
 admin:
   email: ${ADMIN_EMAIL:}
   password: ${ADMIN_PASSWORD:}
-  # Empty default so partial config is detectable (all three or none). Reserved id is 1 — see Decision 10.
   user-id: ${ADMIN_USER_ID:}

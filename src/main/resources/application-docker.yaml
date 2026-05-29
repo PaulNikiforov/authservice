@@ -1,4 +1,6 @@
 spring:
   datasource:
-    # In-network port is always 5432; DB_PORT is host-published only (see local profile).
     url: jdbc:postgresql://auth-db:5432/${DB_NAME}
+
+server:
+  port: 8081

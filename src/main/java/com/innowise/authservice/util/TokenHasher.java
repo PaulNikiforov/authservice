@@ -5,10 +5,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-/**
- * Hashes refresh tokens for storage. Tokens are persisted as their hex-encoded
- * SHA-256 digest, never as the raw value.
- */
 public final class TokenHasher {
 
     private TokenHasher() {

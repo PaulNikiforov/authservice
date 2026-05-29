@@ -1,6 +1,8 @@
 package com.innowise.authservice.security;
 
+import com.innowise.authservice.config.JwtProperties;
 import com.innowise.authservice.service.JwtService;
+import com.innowise.authservice.service.impl.JwtServiceImpl;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
@@ -26,7 +28,7 @@ class JwtAuthenticationFilterTest {
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService(SECRET, 900_000L);
+        jwtService = new JwtServiceImpl(new JwtProperties(SECRET, 900_000L, 0L));
         filter = new JwtAuthenticationFilter(jwtService);
         SecurityContextHolder.clearContext();
     }

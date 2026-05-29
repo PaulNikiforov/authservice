@@ -31,7 +31,6 @@ public class RefreshToken extends BaseEntity {
     @Column(name = "token_hash", unique = true, nullable = false, length = 64)
     private String tokenHash;
 
-    // No FK: userId belongs to User Service domain, not this service.
     @Column(name = "user_id", nullable = false)
     private Long userId;
 

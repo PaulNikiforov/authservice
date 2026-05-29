@@ -1,8 +1,10 @@
 package com.innowise.authservice.service;
 
+import com.innowise.authservice.config.JwtProperties;
 import com.innowise.authservice.exception.InvalidTokenException;
 import com.innowise.authservice.exception.TokenException;
 import com.innowise.authservice.exception.TokenExpiredException;
+import com.innowise.authservice.service.impl.JwtServiceImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -25,7 +27,7 @@ class JwtServiceTest {
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService(SECRET, ACCESS_EXPIRATION);
+        jwtService = new JwtServiceImpl(new JwtProperties(SECRET, ACCESS_EXPIRATION, 0L));
     }
 
     @Test

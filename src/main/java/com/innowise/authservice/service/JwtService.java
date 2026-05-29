@@ -1,78 +1,38 @@
 package com.innowise.authservice.service;
 
-import com.innowise.authservice.exception.InvalidTokenException;
-import com.innowise.authservice.exception.TokenExpiredException;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Date;
+/**
+ * Issues and validates access tokens (JWT, HMAC-SHA256). Implemented by
+ * {@code com.innowise.authservice.service.impl.JwtServiceImpl}.
+ */
+public interface JwtService {
 
-@Service
-public class JwtService {
+    /**
+     * Generates a signed access token with {@code sub = userId} and a {@code role} claim.
+     */
+    String generateAccessToken(Long userId, String role);
 
-    private final SecretKey signingKey;
-    private final long accessExpiration;
+    /**
+     * Verifies the signature and expiry of {@code token} and returns its claims.
+     *
+     * @throws com.innowise.authservice.exception.TokenExpiredException if the token has expired
+     * @throws com.innowise.authservice.exception.InvalidTokenException if the token is malformed or its signature is invalid
+     */
+    Claims validateTokenOrThrow(String token);
 
-    public JwtService(@Value("${jwt.secret}") String secret,
-                      @Value("${jwt.access-expiration}") long accessExpiration) {
-        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.accessExpiration = accessExpiration;
-    }
+    /**
+     * Extracts the user id from the {@code sub} claim.
+     *
+     * @throws com.innowise.authservice.exception.InvalidTokenException if {@code sub} is not a valid Long
+     */
+    Long extractUserId(Claims claims);
 
-    public String generateAccessToken(Long userId, String role) {
-        Instant now = Instant.now();
-        return Jwts.builder()
-                .subject(userId.toString())
-                .claim("role", role)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusMillis(accessExpiration)))
-                .signWith(signingKey)
-                .compact();
-    }
-
-    public Claims validateTokenOrThrow(String token) {
-        try {
-            return Jwts.parser()
-                    .verifyWith(signingKey)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-        } catch (ExpiredJwtException e) {
-            throw new TokenExpiredException("Token has expired");
-        } catch (JwtException e) {
-            throw new InvalidTokenException("Invalid token: " + e.getMessage());
-        }
-    }
-
-    public Long extractUserId(Claims claims) {
-        try {
-            return Long.parseLong(claims.getSubject());
-        } catch (NumberFormatException e) {
-            throw new InvalidTokenException("Token subject is not a valid user id");
-        }
-    }
-
-    public Long extractUserIdLenient(String token) {
-        Claims claims;
-        try {
-            claims = Jwts.parser()
-                    .verifyWith(signingKey)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-        } catch (ExpiredJwtException e) {
-            claims = e.getClaims();
-        } catch (JwtException e) {
-            throw new InvalidTokenException("Invalid token: " + e.getMessage());
-        }
-        return extractUserId(claims);
-    }
+    /**
+     * Extracts the user id from a token, tolerating expiry (used on logout, where an expired
+     * access token must still identify its owner). A malformed/forged token is still rejected.
+     *
+     * @throws com.innowise.authservice.exception.InvalidTokenException if the token is malformed or its signature is invalid
+     */
+    Long extractUserIdLenient(String token);
 }

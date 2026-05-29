@@ -1,4 +1,4 @@
-package com.innowise.authservice.service.dto;
+package com.innowise.authservice.model.dto;
 
 public record ValidationResponse(
         Long userId,

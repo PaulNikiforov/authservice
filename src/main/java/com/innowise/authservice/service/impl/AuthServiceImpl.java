@@ -9,17 +9,17 @@ import com.innowise.authservice.model.Credential;
 import com.innowise.authservice.model.RefreshToken;
 import com.innowise.authservice.repository.CredentialRepository;
 import com.innowise.authservice.repository.RefreshTokenRepository;
+import com.innowise.authservice.config.JwtProperties;
 import com.innowise.authservice.service.AuthService;
 import com.innowise.authservice.service.JwtService;
-import com.innowise.authservice.service.dto.LoginRequest;
-import com.innowise.authservice.service.dto.LoginResponse;
-import com.innowise.authservice.service.dto.RefreshRequest;
-import com.innowise.authservice.service.dto.SaveCredentialsRequest;
-import com.innowise.authservice.service.dto.TokenResponse;
-import com.innowise.authservice.service.dto.ValidateRequest;
-import com.innowise.authservice.service.dto.ValidationResponse;
+import com.innowise.authservice.model.dto.LoginRequest;
+import com.innowise.authservice.model.dto.LoginResponse;
+import com.innowise.authservice.model.dto.RefreshRequest;
+import com.innowise.authservice.model.dto.SaveCredentialsRequest;
+import com.innowise.authservice.model.dto.TokenResponse;
+import com.innowise.authservice.model.dto.ValidateRequest;
+import com.innowise.authservice.model.dto.ValidationResponse;
 import com.innowise.authservice.util.TokenHasher;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,12 +41,12 @@ public class AuthServiceImpl implements AuthService {
                            RefreshTokenRepository refreshTokenRepository,
                            JwtService jwtService,
                            PasswordEncoder passwordEncoder,
-                           @Value("${jwt.refresh-expiration}") long refreshExpiration) {
+                           JwtProperties jwtProperties) {
         this.credentialRepository = credentialRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
-        this.refreshExpiration = refreshExpiration;
+        this.refreshExpiration = jwtProperties.refreshExpiration();
     }
 
     @Override
@@ -76,7 +76,7 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
-        if (!credential.getIsActive()) {
+        if (Boolean.FALSE.equals(credential.getIsActive())) {
             throw new UserDeactivatedException("Account is deactivated");
         }
 
@@ -100,7 +100,7 @@ public class AuthServiceImpl implements AuthService {
         Credential credential = credentialRepository.findByUserId(existing.getUserId())
                 .orElseThrow(() -> new InvalidTokenException("No credentials found for token owner"));
 
-        if (!credential.getIsActive()) {
+        if (Boolean.FALSE.equals(credential.getIsActive())) {
             throw new UserDeactivatedException("Account is deactivated");
         }
 
@@ -141,7 +141,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private LocalDateTime calculateRefreshExpiresAt() {
-        // Same clock/zone as JPA auditing (createdAt) and the expiry check in refresh()
         return LocalDateTime.now().plus(refreshExpiration, ChronoUnit.MILLIS);
     }
 }
