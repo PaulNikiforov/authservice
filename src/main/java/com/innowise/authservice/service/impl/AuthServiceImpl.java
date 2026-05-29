@@ -18,17 +18,14 @@ import com.innowise.authservice.service.dto.SaveCredentialsRequest;
 import com.innowise.authservice.service.dto.TokenResponse;
 import com.innowise.authservice.service.dto.ValidateRequest;
 import com.innowise.authservice.service.dto.ValidationResponse;
+import com.innowise.authservice.util.TokenHasher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HexFormat;
 import java.util.UUID;
 
 @Service
@@ -91,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public TokenResponse refresh(RefreshRequest request) {
-        String tokenHash = hashToken(request.refreshToken());
+        String tokenHash = TokenHasher.sha256Hex(request.refreshToken());
 
         RefreshToken existing = refreshTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
@@ -136,13 +133,9 @@ public class AuthServiceImpl implements AuthService {
 
     private String saveRefreshToken(Long userId) {
         String rawToken = UUID.randomUUID().toString();
-        String tokenHash = hashToken(rawToken);
+        String tokenHash = TokenHasher.sha256Hex(rawToken);
 
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setTokenHash(tokenHash);
-        refreshToken.setUserId(userId);
-        refreshToken.setExpiresAt(calculateRefreshExpiresAt());
-        refreshTokenRepository.save(refreshToken);
+        refreshTokenRepository.save(RefreshToken.of(tokenHash, userId, calculateRefreshExpiresAt()));
 
         return rawToken;
     }
@@ -150,15 +143,5 @@ public class AuthServiceImpl implements AuthService {
     private LocalDateTime calculateRefreshExpiresAt() {
         // Same clock/zone as JPA auditing (createdAt) and the expiry check in refresh()
         return LocalDateTime.now().plus(refreshExpiration, ChronoUnit.MILLIS);
-    }
-
-    private String hashToken(String token) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
-        }
     }
 }

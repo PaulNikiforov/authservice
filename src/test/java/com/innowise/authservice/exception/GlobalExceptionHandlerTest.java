@@ -125,16 +125,6 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleUserNotFound_shouldReturn404() {
-        ResponseEntity<ErrorResponse> response = handler.handleUserNotFound(
-                new UserNotFoundException("Not found"), request);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody().status()).isEqualTo(404);
-        assertThat(response.getBody().message()).isEqualTo("Not found");
-    }
-
-    @Test
     void handleUserAlreadyExists_shouldReturn409() {
         ResponseEntity<ErrorResponse> response = handler.handleUserAlreadyExists(
                 new UserAlreadyExistsException("Duplicate email"), request);

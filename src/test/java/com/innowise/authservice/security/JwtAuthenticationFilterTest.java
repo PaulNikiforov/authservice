@@ -1,6 +1,8 @@
 package com.innowise.authservice.security;
 
 import com.innowise.authservice.service.JwtService;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -73,13 +78,12 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void doFilter_withExpiredToken_doesNotSetAuthentication() throws Exception {
-        String expiredToken = io.jsonwebtoken.Jwts.builder()
+        String expiredToken = Jwts.builder()
                 .subject("1")
                 .claim("role", "USER")
-                .issuedAt(new java.util.Date(System.currentTimeMillis() - 10_000))
-                .expiration(new java.util.Date(System.currentTimeMillis() - 5_000))
-                .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor(
-                        SECRET.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                .issuedAt(new Date(System.currentTimeMillis() - 10_000))
+                .expiration(new Date(System.currentTimeMillis() - 5_000))
+                .signWith(Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8)))
                 .compact();
 
         MockHttpServletRequest request = new MockHttpServletRequest();

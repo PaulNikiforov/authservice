@@ -1,0 +1,34 @@
+services:
+  auth-db:
+    # postgres:16 (Debian) — same tag as TestcontainersConfiguration. Do NOT use
+    # 16-alpine: musl/glibc locale differences can change email unique-index collation.
+    image: postgres:16
+    # No env_file here: only POSTGRES_* belong in the DB container. ${...} below are
+    # interpolated by compose from the project-root .env; JWT_SECRET/ADMIN_* stay out.
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      # Fixed UTC (Decision 8): CURRENT_TIMESTAMP column defaults are evaluated in the
+      # DB timezone and must match the app's LocalDateTime.now().
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      # Host-published port (DB_PORT) only; in-container port is always 5432.
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - auth-net
+
+volumes:
+  auth-db-data:
+
+networks:
+  auth-net:
+    driver: bridge

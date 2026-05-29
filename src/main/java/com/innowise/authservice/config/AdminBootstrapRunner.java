@@ -2,8 +2,7 @@ package com.innowise.authservice.config;
 
 import com.innowise.authservice.model.Credential;
 import com.innowise.authservice.repository.CredentialRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -15,10 +14,9 @@ import org.springframework.stereotype.Component;
  * Creates the admin credential on startup from {@code ADMIN_*} configuration.
  * See 04-decisions-log.md, Decision 2 + Decision 10.
  */
+@Slf4j
 @Component
 public class AdminBootstrapRunner implements ApplicationRunner {
-
-    private static final Logger log = LoggerFactory.getLogger(AdminBootstrapRunner.class);
 
     private final CredentialRepository credentialRepository;
     private final PasswordEncoder passwordEncoder;

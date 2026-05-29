@@ -8,3 +8,6 @@ databaseChangeLog:
   - include:
       file: changes/002-create-refresh-tokens-table.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/004-alter-token-hash-char64.yaml
+      relativeToChangelogFile: true

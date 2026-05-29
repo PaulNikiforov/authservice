@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-alter-token-hash-char64
+      author: authservice
+      comment: >-
+        SHA-256 hex is always 64 chars. Narrow token_hash from VARCHAR(255)
+        to CHAR(64) to reduce index depth and storage on the unique index.
+      changes:
+        - modifyDataType:
+            tableName: refresh_tokens
+            columnName: token_hash
+            newDataType: CHAR(64)

@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TokenException.class)
     public ResponseEntity<ErrorResponse> handleTokenException(TokenException ex,
-                                                               HttpServletRequest request) {
+                                                              HttpServletRequest request) {
         return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
@@ -58,12 +58,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserDeactivated(UserDeactivatedException ex,
                                                                HttpServletRequest request) {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request);
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex,
-                                                            HttpServletRequest request) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
