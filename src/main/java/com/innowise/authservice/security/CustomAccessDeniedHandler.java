@@ -1,6 +1,7 @@
 package com.innowise.authservice.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.innowise.authservice.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -21,14 +21,15 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
                        AccessDeniedException accessDeniedException) throws IOException {
+        ErrorResponse body = new ErrorResponse(
+                Instant.now(),
+                HttpServletResponse.SC_FORBIDDEN,
+                "Forbidden",
+                "Access is denied",
+                request.getRequestURI()
+        );
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json;charset=UTF-8");
-        objectMapper.writeValue(response.getOutputStream(), Map.of(
-                "timestamp", Instant.now().toString(),
-                "status", 403,
-                "error", "Forbidden",
-                "message", "Access is denied",
-                "path", request.getRequestURI()
-        ));
+        objectMapper.writeValue(response.getOutputStream(), body);
     }
 }

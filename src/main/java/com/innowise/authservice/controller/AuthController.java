@@ -1,0 +1,65 @@
+package com.innowise.authservice.controller;
+
+import com.innowise.authservice.exception.InvalidTokenException;
+import com.innowise.authservice.service.AuthService;
+import com.innowise.authservice.service.dto.LoginRequest;
+import com.innowise.authservice.service.dto.LoginResponse;
+import com.innowise.authservice.service.dto.RefreshRequest;
+import com.innowise.authservice.service.dto.SaveCredentialsRequest;
+import com.innowise.authservice.service.dto.TokenResponse;
+import com.innowise.authservice.service.dto.ValidateRequest;
+import com.innowise.authservice.service.dto.ValidationResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private static final String BEARER_PREFIX = "Bearer ";
+
+    private final AuthService authService;
+
+    @PostMapping("/credentials")
+    public ResponseEntity<TokenResponse> saveCredentials(@Valid @RequestBody SaveCredentialsRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.saveCredentials(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(authService.refresh(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @RequestHeader(name = "Authorization", required = false) String authorization) {
+        if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
+            throw new InvalidTokenException("Missing or malformed Authorization header");
+        }
+        String token = authorization.substring(BEARER_PREFIX.length());
+        if (token.isBlank()) {
+            throw new InvalidTokenException("Authorization token must not be empty");
+        }
+        authService.logout(token);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<ValidationResponse> validate(@Valid @RequestBody ValidateRequest request) {
+        return ResponseEntity.ok(authService.validate(request));
+    }
+}

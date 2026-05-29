@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,8 +26,12 @@ class SecurityConfigTest {
 
     @Test
     void authEndpoints_shouldNotReturn401() throws Exception {
-        mockMvc.perform(post("/auth/login"))
-                .andExpect(status().isNotFound());
+        // /auth/** is permitAll: an invalid body reaches the controller and is rejected
+        // by validation (400) — proving security did NOT block the request with 401.
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
