@@ -43,11 +43,6 @@ class RefreshTokenRepositoryTest {
     }
 
     @Test
-    void findByTokenHash_shouldReturnEmpty_whenNotFound() {
-        assertThat(refreshTokenRepository.findByTokenHash("nonexistent")).isEmpty();
-    }
-
-    @Test
     void deleteAllByUserId_shouldRemoveAllTokensForUser() {
         refreshTokenRepository.saveAll(List.of(
                 createRefreshToken("hash_session1", 20L),

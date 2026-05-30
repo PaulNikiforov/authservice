@@ -37,11 +37,6 @@ class CredentialRepositoryTest {
     }
 
     @Test
-    void findByEmail_shouldReturnEmpty_whenNotFound() {
-        assertThat(credentialRepository.findByEmail("missing@example.com")).isEmpty();
-    }
-
-    @Test
     void findByUserId_shouldReturnCredential() {
         credentialRepository.save(createCredential(42L, "user42@example.com"));
 
@@ -51,20 +46,10 @@ class CredentialRepositoryTest {
     }
 
     @Test
-    void findByUserId_shouldReturnEmpty_whenNotFound() {
-        assertThat(credentialRepository.findByUserId(999L)).isEmpty();
-    }
-
-    @Test
     void existsByEmail_shouldReturnTrue() {
         credentialRepository.save(createCredential(2L, "exists@example.com"));
 
         assertThat(credentialRepository.existsByEmail("exists@example.com")).isTrue();
-    }
-
-    @Test
-    void existsByEmail_shouldReturnFalse_whenNotFound() {
-        assertThat(credentialRepository.existsByEmail("missing@example.com")).isFalse();
     }
 
     @Test

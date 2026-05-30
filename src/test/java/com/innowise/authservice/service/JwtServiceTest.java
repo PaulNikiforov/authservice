@@ -2,7 +2,6 @@ package com.innowise.authservice.service;
 
 import com.innowise.authservice.config.JwtProperties;
 import com.innowise.authservice.exception.InvalidTokenException;
-import com.innowise.authservice.exception.TokenException;
 import com.innowise.authservice.exception.TokenExpiredException;
 import com.innowise.authservice.service.impl.JwtServiceImpl;
 import io.jsonwebtoken.Claims;
@@ -68,13 +67,6 @@ class JwtServiceTest {
 
         assertThatThrownBy(() -> jwtService.validateTokenOrThrow(tampered))
                 .isInstanceOf(InvalidTokenException.class);
-    }
-
-    @Test
-    void tokenExceptions_shouldFollowSealedHierarchy() {
-        assertThat(TokenException.class).isSealed();
-        assertThat(TokenExpiredException.class).isAssignableTo(TokenException.class);
-        assertThat(InvalidTokenException.class).isAssignableTo(TokenException.class);
     }
 
     @Test

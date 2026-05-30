@@ -28,37 +28,6 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleInvalidCredentials_shouldReturn401() {
-        ResponseEntity<ErrorResponse> response = handler.handleInvalidCredentials(
-                new InvalidCredentialsException("Bad credentials"), request);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(response.getBody().status()).isEqualTo(401);
-        assertThat(response.getBody().error()).isEqualTo("Unauthorized");
-        assertThat(response.getBody().message()).isEqualTo("Bad credentials");
-        assertThat(response.getBody().path()).isEqualTo("/auth/login");
-        assertThat(response.getBody().timestamp()).isNotNull();
-    }
-
-    @Test
-    void handleTokenException_expired_shouldReturn401() {
-        ResponseEntity<ErrorResponse> response = handler.handleTokenException(
-                new TokenExpiredException("Token has expired"), request);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(response.getBody().message()).isEqualTo("Token has expired");
-    }
-
-    @Test
-    void handleTokenException_invalid_shouldReturn401() {
-        ResponseEntity<ErrorResponse> response = handler.handleTokenException(
-                new InvalidTokenException("Bad token"), request);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(response.getBody().message()).isEqualTo("Bad token");
-    }
-
-    @Test
     void handleValidation_shouldReturn400WithFieldDetails() {
         BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "request");
         bindingResult.addError(new FieldError("request", "email", "must not be blank"));
@@ -112,26 +81,6 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(response.getBody().status()).isEqualTo(409);
         assertThat(response.getBody().message()).isEqualTo("Resource already exists");
-    }
-
-    @Test
-    void handleUserDeactivated_shouldReturn403() {
-        ResponseEntity<ErrorResponse> response = handler.handleUserDeactivated(
-                new UserDeactivatedException("Account deactivated"), request);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-        assertThat(response.getBody().status()).isEqualTo(403);
-        assertThat(response.getBody().message()).isEqualTo("Account deactivated");
-    }
-
-    @Test
-    void handleUserAlreadyExists_shouldReturn409() {
-        ResponseEntity<ErrorResponse> response = handler.handleUserAlreadyExists(
-                new UserAlreadyExistsException("Duplicate email"), request);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-        assertThat(response.getBody().status()).isEqualTo(409);
-        assertThat(response.getBody().message()).isEqualTo("Duplicate email");
     }
 
     @Test

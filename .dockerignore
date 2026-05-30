@@ -2,11 +2,6 @@
 .gitignore
 .env
 .env.*
-.claude/
 .idea/
 target/
-*.md
 !src/
-report/
-review/
-plans/

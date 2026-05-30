@@ -17,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -47,9 +48,7 @@ class AuthControllerTest {
             given(authService.saveCredentials(any(SaveCredentialsRequest.class)))
                     .willReturn(new TokenResponse("access-token", "refresh-token"));
 
-            mockMvc.perform(post("/auth/credentials")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+            postJson("/auth/credentials", request)
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.accessToken").value("access-token"))
                     .andExpect(jsonPath("$.refreshToken").value("refresh-token"));
@@ -61,9 +60,7 @@ class AuthControllerTest {
             given(authService.login(any(LoginRequest.class)))
                     .willReturn(new LoginResponse("access-token", "refresh-token", 42L, "USER"));
 
-            mockMvc.perform(post("/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+            postJson("/auth/login", request)
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.accessToken").value("access-token"))
                     .andExpect(jsonPath("$.refreshToken").value("refresh-token"))
@@ -77,9 +74,7 @@ class AuthControllerTest {
             given(authService.refresh(any(RefreshRequest.class)))
                     .willReturn(new TokenResponse("new-access", "new-refresh"));
 
-            mockMvc.perform(post("/auth/refresh")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+            postJson("/auth/refresh", request)
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.accessToken").value("new-access"))
                     .andExpect(jsonPath("$.refreshToken").value("new-refresh"));
@@ -100,9 +95,7 @@ class AuthControllerTest {
             given(authService.validate(any(ValidateRequest.class)))
                     .willReturn(new ValidationResponse(42L, "ADMIN"));
 
-            mockMvc.perform(post("/auth/validate")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+            postJson("/auth/validate", request)
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.userId").value(42))
                     .andExpect(jsonPath("$.role").value("ADMIN"));
@@ -116,9 +109,7 @@ class AuthControllerTest {
         void saveCredentials_blankEmail_shouldReturn400() throws Exception {
             SaveCredentialsRequest request = new SaveCredentialsRequest(1L, "", "password123");
 
-            mockMvc.perform(post("/auth/credentials")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+            postJson("/auth/credentials", request)
                     .andExpect(status().isBadRequest());
         }
 
@@ -126,9 +117,7 @@ class AuthControllerTest {
         void saveCredentials_shortPassword_shouldReturn400() throws Exception {
             SaveCredentialsRequest request = new SaveCredentialsRequest(1L, "user@example.com", "short");
 
-            mockMvc.perform(post("/auth/credentials")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+            postJson("/auth/credentials", request)
                     .andExpect(status().isBadRequest());
         }
 
@@ -136,9 +125,7 @@ class AuthControllerTest {
         void login_blankEmail_shouldReturn400() throws Exception {
             LoginRequest request = new LoginRequest("", "password123");
 
-            mockMvc.perform(post("/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+            postJson("/auth/login", request)
                     .andExpect(status().isBadRequest());
         }
 
@@ -146,9 +133,7 @@ class AuthControllerTest {
         void refresh_blankToken_shouldReturn400() throws Exception {
             RefreshRequest request = new RefreshRequest("");
 
-            mockMvc.perform(post("/auth/refresh")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+            postJson("/auth/refresh", request)
                     .andExpect(status().isBadRequest());
         }
     }
@@ -182,5 +167,11 @@ class AuthControllerTest {
                             .header("Authorization", "Bearer "))
                     .andExpect(status().isUnauthorized());
         }
+    }
+
+    private ResultActions postJson(String path, Object body) throws Exception {
+        return mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body)));
     }
 }
