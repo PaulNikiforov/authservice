@@ -49,8 +49,9 @@ class AdminBootstrapRunnerTest {
     @Test
     void run_whenConfigPartial_shouldFailFast() {
         AdminBootstrapRunner runner = runner("admin@test.com", "secret", "");
+        ApplicationArguments args = args();
 
-        assertThatThrownBy(() -> runner.run(args()))
+        assertThatThrownBy(() -> runner.run(args))
                 .isInstanceOf(IllegalStateException.class);
         verifyNoInteractions(credentialRepository, passwordEncoder);
     }
@@ -58,8 +59,9 @@ class AdminBootstrapRunnerTest {
     @Test
     void run_whenUserIdNonNumeric_shouldFailFast() {
         AdminBootstrapRunner runner = runner("admin@test.com", "secret", "not-a-number");
+        ApplicationArguments args = args();
 
-        assertThatThrownBy(() -> runner.run(args()))
+        assertThatThrownBy(() -> runner.run(args))
                 .isInstanceOf(IllegalStateException.class);
         verifyNoInteractions(credentialRepository, passwordEncoder);
     }

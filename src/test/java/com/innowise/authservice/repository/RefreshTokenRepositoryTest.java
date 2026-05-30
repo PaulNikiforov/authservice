@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -61,7 +62,8 @@ class RefreshTokenRepositoryTest {
 
     @Test
     void deleteAllByUserId_shouldNotThrow_whenNoTokens() {
-        refreshTokenRepository.deleteAllByUserId(999L);
+        assertThatCode(() -> refreshTokenRepository.deleteAllByUserId(999L))
+                .doesNotThrowAnyException();
     }
 
     @Test

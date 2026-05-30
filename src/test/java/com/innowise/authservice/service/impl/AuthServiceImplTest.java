@@ -29,7 +29,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -121,7 +120,8 @@ class AuthServiceImplTest {
         when(credentialRepository.findByEmail("user@test.com")).thenReturn(Optional.of(credential));
         when(passwordEncoder.matches("wrong", "$2a$10$hashed")).thenReturn(false);
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("user@test.com", "wrong")))
+        LoginRequest request = new LoginRequest("user@test.com", "wrong");
+        assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 
@@ -129,7 +129,8 @@ class AuthServiceImplTest {
     void login_shouldThrow_whenEmailNotFound() {
         when(credentialRepository.findByEmail("nobody@test.com")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("nobody@test.com", "password123")))
+        LoginRequest request = new LoginRequest("nobody@test.com", "password123");
+        assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 
@@ -142,7 +143,8 @@ class AuthServiceImplTest {
         when(credentialRepository.findByEmail("user@test.com")).thenReturn(Optional.of(credential));
         when(passwordEncoder.matches("password123", "$2a$10$hashed")).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("user@test.com", "password123")))
+        LoginRequest request = new LoginRequest("user@test.com", "password123");
+        assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(UserDeactivatedException.class);
     }
 
@@ -173,7 +175,8 @@ class AuthServiceImplTest {
     void refresh_shouldThrow_whenTokenNotFound() {
         when(refreshTokenRepository.findByTokenHash(any())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.refresh(new RefreshRequest("bad-token")))
+        RefreshRequest request = new RefreshRequest("bad-token");
+        assertThatThrownBy(() -> authService.refresh(request))
                 .isInstanceOf(InvalidTokenException.class);
     }
 
@@ -186,7 +189,8 @@ class AuthServiceImplTest {
 
         when(refreshTokenRepository.findByTokenHash(any())).thenReturn(Optional.of(expiredToken));
 
-        assertThatThrownBy(() -> authService.refresh(new RefreshRequest("expired-token")))
+        RefreshRequest request = new RefreshRequest("expired-token");
+        assertThatThrownBy(() -> authService.refresh(request))
                 .isInstanceOf(TokenExpiredException.class);
     }
 
@@ -204,7 +208,8 @@ class AuthServiceImplTest {
         when(refreshTokenRepository.findByTokenHash(any())).thenReturn(Optional.of(existingToken));
         when(credentialRepository.findByUserId(42L)).thenReturn(Optional.of(credential));
 
-        assertThatThrownBy(() -> authService.refresh(new RefreshRequest("some-token")))
+        RefreshRequest request = new RefreshRequest("some-token");
+        assertThatThrownBy(() -> authService.refresh(request))
                 .isInstanceOf(UserDeactivatedException.class);
     }
 
@@ -218,7 +223,8 @@ class AuthServiceImplTest {
         when(refreshTokenRepository.findByTokenHash(any())).thenReturn(Optional.of(existingToken));
         when(credentialRepository.findByUserId(42L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.refresh(new RefreshRequest("some-token")))
+        RefreshRequest request = new RefreshRequest("some-token");
+        assertThatThrownBy(() -> authService.refresh(request))
                 .isInstanceOf(InvalidTokenException.class);
     }
 
@@ -269,7 +275,8 @@ class AuthServiceImplTest {
         when(jwtService.validateTokenOrThrow("bad.token"))
                 .thenThrow(new InvalidTokenException("Invalid token: bad signature"));
 
-        assertThatThrownBy(() -> authService.validate(new ValidateRequest("bad.token")))
+        ValidateRequest request = new ValidateRequest("bad.token");
+        assertThatThrownBy(() -> authService.validate(request))
                 .isInstanceOf(InvalidTokenException.class);
     }
 
@@ -278,7 +285,8 @@ class AuthServiceImplTest {
         when(jwtService.validateTokenOrThrow("expired.token"))
                 .thenThrow(new TokenExpiredException("Token has expired"));
 
-        assertThatThrownBy(() -> authService.validate(new ValidateRequest("expired.token")))
+        ValidateRequest request = new ValidateRequest("expired.token");
+        assertThatThrownBy(() -> authService.validate(request))
                 .isInstanceOf(TokenExpiredException.class);
     }
 }
