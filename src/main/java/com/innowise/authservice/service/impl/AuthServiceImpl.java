@@ -122,6 +122,9 @@ public class AuthServiceImpl implements AuthService {
         var claims = jwtService.validateTokenOrThrow(request.accessToken());
         Long userId = jwtService.extractUserId(claims);
         String role = claims.get("role", String.class);
+        if (role == null || role.isBlank()) {
+            throw new InvalidTokenException("Token is missing the 'role' claim");
+        }
         return new ValidationResponse(userId, role);
     }
 

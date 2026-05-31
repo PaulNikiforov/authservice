@@ -52,10 +52,16 @@ public class AdminBootstrapRunner implements ApplicationRunner {
             throw new IllegalStateException(
                     "Admin bootstrap misconfigured: ADMIN_USER_ID must be numeric, got: " + adminUserId, e);
         }
+        if (userId <= 0) {
+            throw new IllegalStateException("Admin bootstrap misconfigured: ADMIN_USER_ID must be positive");
+        }
 
         if (credentialRepository.existsByEmail(adminEmail)) {
             log.info("Admin bootstrap skipped: credential already exists for {}", adminEmail);
             return;
+        }
+        if (credentialRepository.existsByUserId(userId)) {
+            throw new IllegalStateException("Admin bootstrap misconfigured: ADMIN_USER_ID already has credentials");
         }
 
         Credential admin = Credential.of(userId, adminEmail,
@@ -64,6 +70,9 @@ public class AdminBootstrapRunner implements ApplicationRunner {
             credentialRepository.save(admin);
             log.info("Admin user created: email={}, userId={}", adminEmail, userId);
         } catch (DataIntegrityViolationException e) {
+            if (credentialRepository.findByEmail(adminEmail).isEmpty()) {
+                throw e;
+            }
             log.info("Admin bootstrap skipped: created concurrently by another instance ({})", adminEmail);
         }
     }

@@ -122,6 +122,14 @@ class AuthControllerTest {
         }
 
         @Test
+        void saveCredentials_nonPositiveUserId_shouldReturn400() throws Exception {
+            SaveCredentialsRequest request = new SaveCredentialsRequest(0L, "user@example.com", "password123");
+
+            postJson("/auth/credentials", request)
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
         void login_blankEmail_shouldReturn400() throws Exception {
             LoginRequest request = new LoginRequest("", "password123");
 

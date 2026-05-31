@@ -271,6 +271,28 @@ class AuthServiceImplTest {
     }
 
     @Test
+    void validate_shouldThrow_whenRoleMissing() {
+        Claims claims = mock(Claims.class);
+        when(claims.get("role", String.class)).thenReturn(null);
+        when(jwtService.validateTokenOrThrow("missing-role.token")).thenReturn(claims);
+        when(jwtService.extractUserId(claims)).thenReturn(42L);
+
+        assertThatThrownBy(() -> authService.validate(new ValidateRequest("missing-role.token")))
+                .isInstanceOf(InvalidTokenException.class);
+    }
+
+    @Test
+    void validate_shouldThrow_whenRoleBlank() {
+        Claims claims = mock(Claims.class);
+        when(claims.get("role", String.class)).thenReturn(" ");
+        when(jwtService.validateTokenOrThrow("blank-role.token")).thenReturn(claims);
+        when(jwtService.extractUserId(claims)).thenReturn(42L);
+
+        assertThatThrownBy(() -> authService.validate(new ValidateRequest("blank-role.token")))
+                .isInstanceOf(InvalidTokenException.class);
+    }
+
+    @Test
     void validate_shouldThrow_whenTokenInvalid() {
         when(jwtService.validateTokenOrThrow("bad.token"))
                 .thenThrow(new InvalidTokenException("Invalid token: bad signature"));
