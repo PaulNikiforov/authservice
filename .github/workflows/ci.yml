@@ -82,7 +82,7 @@ jobs:
           name: jacoco-report
           path: target/site/jacoco/
 
-      - run: mvn verify -B -DskipTests sonar:sonar -Dsonar.token=$SONAR_TOKEN
+      - run: mvn verify -B -DskipTests org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.token=$SONAR_TOKEN
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
