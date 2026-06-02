@@ -277,7 +277,8 @@ class AuthServiceImplTest {
         when(jwtService.validateTokenOrThrow("missing-role.token")).thenReturn(claims);
         when(jwtService.extractUserId(claims)).thenReturn(42L);
 
-        assertThatThrownBy(() -> authService.validate(new ValidateRequest("missing-role.token")))
+        ValidateRequest request = new ValidateRequest("missing-role.token");
+        assertThatThrownBy(() -> authService.validate(request))
                 .isInstanceOf(InvalidTokenException.class);
     }
 
@@ -288,7 +289,8 @@ class AuthServiceImplTest {
         when(jwtService.validateTokenOrThrow("blank-role.token")).thenReturn(claims);
         when(jwtService.extractUserId(claims)).thenReturn(42L);
 
-        assertThatThrownBy(() -> authService.validate(new ValidateRequest("blank-role.token")))
+        ValidateRequest request = new ValidateRequest("blank-role.token");
+        assertThatThrownBy(() -> authService.validate(request))
                 .isInstanceOf(InvalidTokenException.class);
     }
 

@@ -4,6 +4,8 @@ import com.innowise.authservice.model.Credential;
 import com.innowise.authservice.repository.CredentialRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -48,29 +50,10 @@ class AdminBootstrapRunnerTest {
         verifyNoInteractions(credentialRepository, passwordEncoder);
     }
 
-    @Test
-    void run_whenConfigPartial_shouldFailFast() {
-        AdminBootstrapRunner runner = runner("admin@test.com", "secret", "");
-        ApplicationArguments args = args();
-
-        assertThatThrownBy(() -> runner.run(args))
-                .isInstanceOf(IllegalStateException.class);
-        verifyNoInteractions(credentialRepository, passwordEncoder);
-    }
-
-    @Test
-    void run_whenUserIdNonNumeric_shouldFailFast() {
-        AdminBootstrapRunner runner = runner("admin@test.com", "secret", "not-a-number");
-        ApplicationArguments args = args();
-
-        assertThatThrownBy(() -> runner.run(args))
-                .isInstanceOf(IllegalStateException.class);
-        verifyNoInteractions(credentialRepository, passwordEncoder);
-    }
-
-    @Test
-    void run_whenUserIdNonPositive_shouldFailFast() {
-        AdminBootstrapRunner runner = runner("admin@test.com", "secret", "0");
+    @ParameterizedTest
+    @ValueSource(strings = {"", "not-a-number", "0"})
+    void run_whenConfigInvalid_shouldFailFast(String userId) {
+        AdminBootstrapRunner runner = runner("admin@test.com", "secret", userId);
         ApplicationArguments args = args();
 
         assertThatThrownBy(() -> runner.run(args))
@@ -95,8 +78,9 @@ class AdminBootstrapRunnerTest {
         when(credentialRepository.existsByUserId(1L)).thenReturn(true);
 
         AdminBootstrapRunner runner = runner("admin@test.com", "secret", "1");
+        ApplicationArguments args = args();
 
-        assertThatThrownBy(() -> runner.run(args()))
+        assertThatThrownBy(() -> runner.run(args))
                 .isInstanceOf(IllegalStateException.class);
         verify(credentialRepository, never()).save(any());
         verifyNoInteractions(passwordEncoder);
@@ -146,8 +130,9 @@ class AdminBootstrapRunnerTest {
         when(credentialRepository.findByEmail("admin@test.com")).thenReturn(Optional.empty());
 
         AdminBootstrapRunner runner = runner("admin@test.com", "secret", "1");
+        ApplicationArguments args = args();
 
-        assertThatThrownBy(() -> runner.run(args()))
+        assertThatThrownBy(() -> runner.run(args))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 }
