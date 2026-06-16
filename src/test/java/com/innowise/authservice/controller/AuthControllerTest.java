@@ -48,7 +48,7 @@ class AuthControllerTest {
             given(authService.saveCredentials(any(SaveCredentialsRequest.class)))
                     .willReturn(new TokenResponse("access-token", "refresh-token"));
 
-            postJson("/auth/credentials", request)
+            postJson("/api/v1/auth/credentials", request)
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.accessToken").value("access-token"))
                     .andExpect(jsonPath("$.refreshToken").value("refresh-token"));
@@ -60,7 +60,7 @@ class AuthControllerTest {
             given(authService.login(any(LoginRequest.class)))
                     .willReturn(new LoginResponse("access-token", "refresh-token", 42L, "USER"));
 
-            postJson("/auth/login", request)
+            postJson("/api/v1/auth/login", request)
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.accessToken").value("access-token"))
                     .andExpect(jsonPath("$.refreshToken").value("refresh-token"))
@@ -74,7 +74,7 @@ class AuthControllerTest {
             given(authService.refresh(any(RefreshRequest.class)))
                     .willReturn(new TokenResponse("new-access", "new-refresh"));
 
-            postJson("/auth/refresh", request)
+            postJson("/api/v1/auth/refresh", request)
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.accessToken").value("new-access"))
                     .andExpect(jsonPath("$.refreshToken").value("new-refresh"));
@@ -84,7 +84,7 @@ class AuthControllerTest {
         void logout_shouldReturn200() throws Exception {
             doNothing().when(authService).logout("test-token");
 
-            mockMvc.perform(post("/auth/logout")
+            mockMvc.perform(post("/api/v1/auth/logout")
                             .header("Authorization", "Bearer test-token"))
                     .andExpect(status().isOk());
         }
@@ -95,7 +95,7 @@ class AuthControllerTest {
             given(authService.validate(any(ValidateRequest.class)))
                     .willReturn(new ValidationResponse(42L, "ADMIN"));
 
-            postJson("/auth/validate", request)
+            postJson("/api/v1/auth/validate", request)
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.userId").value(42))
                     .andExpect(jsonPath("$.role").value("ADMIN"));
@@ -109,7 +109,7 @@ class AuthControllerTest {
         void saveCredentials_blankEmail_shouldReturn400() throws Exception {
             SaveCredentialsRequest request = new SaveCredentialsRequest(1L, "", "password123");
 
-            postJson("/auth/credentials", request)
+            postJson("/api/v1/auth/credentials", request)
                     .andExpect(status().isBadRequest());
         }
 
@@ -117,7 +117,7 @@ class AuthControllerTest {
         void saveCredentials_shortPassword_shouldReturn400() throws Exception {
             SaveCredentialsRequest request = new SaveCredentialsRequest(1L, "user@example.com", "short");
 
-            postJson("/auth/credentials", request)
+            postJson("/api/v1/auth/credentials", request)
                     .andExpect(status().isBadRequest());
         }
 
@@ -125,7 +125,7 @@ class AuthControllerTest {
         void saveCredentials_nonPositiveUserId_shouldReturn400() throws Exception {
             SaveCredentialsRequest request = new SaveCredentialsRequest(0L, "user@example.com", "password123");
 
-            postJson("/auth/credentials", request)
+            postJson("/api/v1/auth/credentials", request)
                     .andExpect(status().isBadRequest());
         }
 
@@ -133,7 +133,7 @@ class AuthControllerTest {
         void login_blankEmail_shouldReturn400() throws Exception {
             LoginRequest request = new LoginRequest("", "password123");
 
-            postJson("/auth/login", request)
+            postJson("/api/v1/auth/login", request)
                     .andExpect(status().isBadRequest());
         }
 
@@ -141,7 +141,7 @@ class AuthControllerTest {
         void refresh_blankToken_shouldReturn400() throws Exception {
             RefreshRequest request = new RefreshRequest("");
 
-            postJson("/auth/refresh", request)
+            postJson("/api/v1/auth/refresh", request)
                     .andExpect(status().isBadRequest());
         }
     }
@@ -151,27 +151,27 @@ class AuthControllerTest {
 
         @Test
         void logout_malformedHeader_shouldReturn401() throws Exception {
-            mockMvc.perform(post("/auth/logout")
+            mockMvc.perform(post("/api/v1/auth/logout")
                             .header("Authorization", "Basic dXNlcjpwYXNz"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         void logout_missingBearerPrefix_shouldReturn401() throws Exception {
-            mockMvc.perform(post("/auth/logout")
+            mockMvc.perform(post("/api/v1/auth/logout")
                             .header("Authorization", "raw-token-value"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         void logout_missingHeader_shouldReturn401() throws Exception {
-            mockMvc.perform(post("/auth/logout"))
+            mockMvc.perform(post("/api/v1/auth/logout"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         void logout_emptyBearerToken_shouldReturn401() throws Exception {
-            mockMvc.perform(post("/auth/logout")
+            mockMvc.perform(post("/api/v1/auth/logout")
                             .header("Authorization", "Bearer "))
                     .andExpect(status().isUnauthorized());
         }

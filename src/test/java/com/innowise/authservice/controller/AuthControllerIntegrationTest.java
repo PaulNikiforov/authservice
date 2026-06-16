@@ -89,7 +89,7 @@ class AuthControllerIntegrationTest {
                     .andExpect(jsonPath("$.userId").value(100))
                     .andExpect(jsonPath("$.role").value("USER"));
 
-            mockMvc.perform(post("/auth/logout")
+            mockMvc.perform(post("/api/v1/auth/logout")
                             .header("Authorization", "Bearer " + refreshTokens.accessToken()))
                     .andExpect(status().isOk());
 
@@ -98,7 +98,7 @@ class AuthControllerIntegrationTest {
                     .andExpect(jsonPath("$.status").value(401))
                     .andExpect(jsonPath("$.error").value("Unauthorized"))
                     .andExpect(jsonPath("$.message").isNotEmpty())
-                    .andExpect(jsonPath("$.path").value("/auth/refresh"));
+                    .andExpect(jsonPath("$.path").value("/api/v1/auth/refresh"));
         }
     }
 
@@ -114,7 +114,7 @@ class AuthControllerIntegrationTest {
                     .andExpect(jsonPath("$.status").value(409))
                     .andExpect(jsonPath("$.error").value("Conflict"))
                     .andExpect(jsonPath("$.message").value("Email already registered"))
-                    .andExpect(jsonPath("$.path").value("/auth/credentials"));
+                    .andExpect(jsonPath("$.path").value("/api/v1/auth/credentials"));
         }
 
         @Test
@@ -126,7 +126,7 @@ class AuthControllerIntegrationTest {
                     .andExpect(jsonPath("$.status").value(401))
                     .andExpect(jsonPath("$.error").value("Unauthorized"))
                     .andExpect(jsonPath("$.message").value("Invalid email or password"))
-                    .andExpect(jsonPath("$.path").value("/auth/login"));
+                    .andExpect(jsonPath("$.path").value("/api/v1/auth/login"));
         }
 
         @Test
@@ -142,7 +142,7 @@ class AuthControllerIntegrationTest {
                     .andExpect(jsonPath("$.status").value(403))
                     .andExpect(jsonPath("$.error").value("Forbidden"))
                     .andExpect(jsonPath("$.message").value("Account is deactivated"))
-                    .andExpect(jsonPath("$.path").value("/auth/login"));
+                    .andExpect(jsonPath("$.path").value("/api/v1/auth/login"));
         }
 
         @Test
@@ -161,7 +161,7 @@ class AuthControllerIntegrationTest {
                     .andExpect(jsonPath("$.status").value(401))
                     .andExpect(jsonPath("$.error").value("Unauthorized"))
                     .andExpect(jsonPath("$.message").value("Refresh token has expired"))
-                    .andExpect(jsonPath("$.path").value("/auth/refresh"));
+                    .andExpect(jsonPath("$.path").value("/api/v1/auth/refresh"));
         }
 
         @Test
@@ -171,7 +171,7 @@ class AuthControllerIntegrationTest {
                     .andExpect(jsonPath("$.status").value(401))
                     .andExpect(jsonPath("$.error").value("Unauthorized"))
                     .andExpect(jsonPath("$.message").isNotEmpty())
-                    .andExpect(jsonPath("$.path").value("/auth/validate"));
+                    .andExpect(jsonPath("$.path").value("/api/v1/auth/validate"));
         }
 
         @Test
@@ -189,7 +189,7 @@ class AuthControllerIntegrationTest {
                     .andExpect(jsonPath("$.status").value(401))
                     .andExpect(jsonPath("$.error").value("Unauthorized"))
                     .andExpect(jsonPath("$.message").isNotEmpty())
-                    .andExpect(jsonPath("$.path").value("/auth/validate"));
+                    .andExpect(jsonPath("$.path").value("/api/v1/auth/validate"));
         }
     }
 
@@ -212,28 +212,28 @@ class AuthControllerIntegrationTest {
 
     private ResultActions performSave(Long userId, String email, String password) throws Exception {
         SaveCredentialsRequest request = new SaveCredentialsRequest(userId, email, password);
-        return mockMvc.perform(post("/auth/credentials")
+        return mockMvc.perform(post("/api/v1/auth/credentials")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)));
     }
 
     private ResultActions performLogin(String email, String password) throws Exception {
         LoginRequest request = new LoginRequest(email, password);
-        return mockMvc.perform(post("/auth/login")
+        return mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)));
     }
 
     private ResultActions performRefresh(String refreshToken) throws Exception {
         RefreshRequest request = new RefreshRequest(refreshToken);
-        return mockMvc.perform(post("/auth/refresh")
+        return mockMvc.perform(post("/api/v1/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)));
     }
 
     private ResultActions performValidate(String accessToken) throws Exception {
         ValidateRequest request = new ValidateRequest(accessToken);
-        return mockMvc.perform(post("/auth/validate")
+        return mockMvc.perform(post("/api/v1/auth/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)));
     }
