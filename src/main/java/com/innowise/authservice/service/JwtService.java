@@ -1,9 +1,10 @@
 package com.innowise.authservice.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.security.JwkSet;
 
 /**
- * Issues and validates access tokens (JWT, HMAC-SHA256). Implemented by
+ * Issues and validates access tokens (JWT, RS256). Implemented by
  * {@code com.innowise.authservice.service.impl.JwtServiceImpl}.
  */
 public interface JwtService {
@@ -35,4 +36,9 @@ public interface JwtService {
      * @throws com.innowise.authservice.exception.InvalidTokenException if the token is malformed or its signature is invalid
      */
     Long extractUserIdLenient(String token);
+
+    /**
+     * Returns a JWK Set containing this service's RSA public key, for publication via a JWKS endpoint.
+     */
+    JwkSet getJwkSet();
 }

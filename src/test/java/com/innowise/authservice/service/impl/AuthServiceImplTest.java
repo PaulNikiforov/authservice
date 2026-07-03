@@ -51,7 +51,7 @@ class AuthServiceImplTest {
 
         authService = new AuthServiceImpl(
                 credentialRepository, refreshTokenRepository,
-                jwtService, passwordEncoder, new JwtProperties("test-secret", 0L, 604_800_000L)
+                jwtService, passwordEncoder, new JwtProperties("test-private-key", "test-public-key", "test-key-id", 0L, 604_800_000L)
         );
 
         when(jwtService.generateAccessToken(any(), any())).thenReturn("access.token");

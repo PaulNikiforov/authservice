@@ -34,3 +34,6 @@ build/
 
 ### VS Code ###
 .vscode/
+*.md
+*.txt
+![Rr][Ee][Aa][Dd][Mm][Ee].[Mm][Dd]

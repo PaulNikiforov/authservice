@@ -16,7 +16,6 @@ import com.innowise.authservice.model.dto.ValidateRequest;
 import com.innowise.authservice.util.TokenHasher;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,8 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -176,12 +174,11 @@ class AuthControllerIntegrationTest {
 
         @Test
         void tokenSignedWithWrongKey_shouldReturn401() throws Exception {
-            SecretKey foreignKey = Keys.hmacShaKeyFor(
-                    "a-totally-different-secret-key-1234567890".getBytes(StandardCharsets.UTF_8));
+            PrivateKey foreignKey = Jwts.SIG.RS256.keyPair().build().getPrivate();
             String forgedToken = Jwts.builder()
                     .subject("999")
                     .claim("role", "USER")
-                    .signWith(foreignKey)
+                    .signWith(foreignKey, Jwts.SIG.RS256)
                     .compact();
 
             performValidate(forgedToken)

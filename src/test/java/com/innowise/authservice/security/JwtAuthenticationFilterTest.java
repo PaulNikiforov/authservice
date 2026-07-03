@@ -3,17 +3,18 @@ package com.innowise.authservice.security;
 import com.innowise.authservice.config.JwtProperties;
 import com.innowise.authservice.service.JwtService;
 import com.innowise.authservice.service.impl.JwtServiceImpl;
+import com.innowise.authservice.support.RsaTestKeys;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,13 +23,26 @@ import static org.mockito.Mockito.verify;
 
 class JwtAuthenticationFilterTest {
 
-    private static final String SECRET = "testsecretkey1234567890abcdefghij";
+    private static final String KEY_ID = "test-key-1";
+
+    private static KeyPair keyPair;
+    private static String privateKeyPem;
+    private static String publicKeyPem;
+
     private JwtService jwtService;
     private JwtAuthenticationFilter filter;
 
+    @BeforeAll
+    static void generateKeyPair() {
+        RsaTestKeys.Pair keys = RsaTestKeys.generate();
+        keyPair = keys.keyPair();
+        privateKeyPem = keys.privateKeyPem();
+        publicKeyPem = keys.publicKeyPem();
+    }
+
     @BeforeEach
     void setUp() {
-        jwtService = new JwtServiceImpl(new JwtProperties(SECRET, 900_000L, 0L));
+        jwtService = new JwtServiceImpl(new JwtProperties(privateKeyPem, publicKeyPem, KEY_ID, 900_000L, 0L));
         filter = new JwtAuthenticationFilter(jwtService);
         SecurityContextHolder.clearContext();
     }
@@ -81,11 +95,12 @@ class JwtAuthenticationFilterTest {
     @Test
     void doFilter_withExpiredToken_doesNotSetAuthentication() throws Exception {
         String expiredToken = Jwts.builder()
+                .header().keyId(KEY_ID).and()
                 .subject("1")
                 .claim("role", "USER")
                 .issuedAt(new Date(System.currentTimeMillis() - 10_000))
                 .expiration(new Date(System.currentTimeMillis() - 5_000))
-                .signWith(Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8)))
+                .signWith(keyPair.getPrivate(), Jwts.SIG.RS256)
                 .compact();
 
         MockHttpServletRequest request = new MockHttpServletRequest();

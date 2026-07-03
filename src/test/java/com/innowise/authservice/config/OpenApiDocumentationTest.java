@@ -39,11 +39,11 @@ class OpenApiDocumentationTest {
     void apiDocs_shouldBePublicAndContainAuthContract() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.paths['/auth/credentials']").exists())
-                .andExpect(jsonPath("$.paths['/auth/login']").exists())
-                .andExpect(jsonPath("$.paths['/auth/refresh']").exists())
-                .andExpect(jsonPath("$.paths['/auth/logout']").exists())
-                .andExpect(jsonPath("$.paths['/auth/validate']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/auth/credentials']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/auth/login']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/auth/refresh']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/auth/logout']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/auth/validate']").exists())
                 .andExpect(jsonPath("$.components.securitySchemes.bearerAuth").exists());
     }
 }
