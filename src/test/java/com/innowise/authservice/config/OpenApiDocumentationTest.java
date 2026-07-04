@@ -43,7 +43,6 @@ class OpenApiDocumentationTest {
                 .andExpect(jsonPath("$.paths['/api/v1/auth/login']").exists())
                 .andExpect(jsonPath("$.paths['/api/v1/auth/refresh']").exists())
                 .andExpect(jsonPath("$.paths['/api/v1/auth/logout']").exists())
-                .andExpect(jsonPath("$.paths['/api/v1/auth/validate']").exists())
                 .andExpect(jsonPath("$.components.securitySchemes.bearerAuth").exists());
     }
 }

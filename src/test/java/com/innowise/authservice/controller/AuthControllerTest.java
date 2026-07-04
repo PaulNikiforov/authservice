@@ -7,8 +7,6 @@ import com.innowise.authservice.model.dto.LoginResponse;
 import com.innowise.authservice.model.dto.RefreshRequest;
 import com.innowise.authservice.model.dto.SaveCredentialsRequest;
 import com.innowise.authservice.model.dto.TokenResponse;
-import com.innowise.authservice.model.dto.ValidateRequest;
-import com.innowise.authservice.model.dto.ValidationResponse;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,18 +85,6 @@ class AuthControllerTest {
             mockMvc.perform(post("/api/v1/auth/logout")
                             .header("Authorization", "Bearer test-token"))
                     .andExpect(status().isOk());
-        }
-
-        @Test
-        void validate_shouldReturn200WithUserInfo() throws Exception {
-            ValidateRequest request = new ValidateRequest("access-token");
-            given(authService.validate(any(ValidateRequest.class)))
-                    .willReturn(new ValidationResponse(42L, "ADMIN"));
-
-            postJson("/api/v1/auth/validate", request)
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.userId").value(42))
-                    .andExpect(jsonPath("$.role").value("ADMIN"));
         }
     }
 

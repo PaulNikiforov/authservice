@@ -7,8 +7,6 @@ import com.innowise.authservice.model.dto.LoginResponse;
 import com.innowise.authservice.model.dto.RefreshRequest;
 import com.innowise.authservice.model.dto.SaveCredentialsRequest;
 import com.innowise.authservice.model.dto.TokenResponse;
-import com.innowise.authservice.model.dto.ValidateRequest;
-import com.innowise.authservice.model.dto.ValidationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -66,11 +64,5 @@ public class AuthController {
         }
         authService.logout(token);
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/validate")
-    @Operation(summary = "Validate access token and extract claims")
-    public ResponseEntity<ValidationResponse> validate(@Valid @RequestBody ValidateRequest request) {
-        return ResponseEntity.ok(authService.validate(request));
     }
 }

@@ -12,10 +12,8 @@ import com.innowise.authservice.model.dto.LoginResponse;
 import com.innowise.authservice.model.dto.RefreshRequest;
 import com.innowise.authservice.model.dto.SaveCredentialsRequest;
 import com.innowise.authservice.model.dto.TokenResponse;
-import com.innowise.authservice.model.dto.ValidateRequest;
 import com.innowise.authservice.util.TokenHasher;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,7 +26,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.security.PrivateKey;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,11 +78,6 @@ class AuthControllerIntegrationTest {
                     .andExpect(jsonPath("$.refreshToken").isNotEmpty())
                     .andReturn();
             TokenResponse refreshTokens = body(refreshResult, TokenResponse.class);
-
-            performValidate(refreshTokens.accessToken())
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.userId").value(100))
-                    .andExpect(jsonPath("$.role").value("USER"));
 
             mockMvc.perform(post("/api/v1/auth/logout")
                             .header("Authorization", "Bearer " + refreshTokens.accessToken()))
@@ -162,32 +154,6 @@ class AuthControllerIntegrationTest {
                     .andExpect(jsonPath("$.path").value("/api/v1/auth/refresh"));
         }
 
-        @Test
-        void malformedToken_shouldReturn401() throws Exception {
-            performValidate("invalid.jwt.token")
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.status").value(401))
-                    .andExpect(jsonPath("$.error").value("Unauthorized"))
-                    .andExpect(jsonPath("$.message").isNotEmpty())
-                    .andExpect(jsonPath("$.path").value("/api/v1/auth/validate"));
-        }
-
-        @Test
-        void tokenSignedWithWrongKey_shouldReturn401() throws Exception {
-            PrivateKey foreignKey = Jwts.SIG.RS256.keyPair().build().getPrivate();
-            String forgedToken = Jwts.builder()
-                    .subject("999")
-                    .claim("role", "USER")
-                    .signWith(foreignKey, Jwts.SIG.RS256)
-                    .compact();
-
-            performValidate(forgedToken)
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.status").value(401))
-                    .andExpect(jsonPath("$.error").value("Unauthorized"))
-                    .andExpect(jsonPath("$.message").isNotEmpty())
-                    .andExpect(jsonPath("$.path").value("/api/v1/auth/validate"));
-        }
     }
 
     @Nested
@@ -224,13 +190,6 @@ class AuthControllerIntegrationTest {
     private ResultActions performRefresh(String refreshToken) throws Exception {
         RefreshRequest request = new RefreshRequest(refreshToken);
         return mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)));
-    }
-
-    private ResultActions performValidate(String accessToken) throws Exception {
-        ValidateRequest request = new ValidateRequest(accessToken);
-        return mockMvc.perform(post("/api/v1/auth/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)));
     }

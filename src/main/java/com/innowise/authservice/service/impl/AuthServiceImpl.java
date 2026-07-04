@@ -17,8 +17,6 @@ import com.innowise.authservice.model.dto.LoginResponse;
 import com.innowise.authservice.model.dto.RefreshRequest;
 import com.innowise.authservice.model.dto.SaveCredentialsRequest;
 import com.innowise.authservice.model.dto.TokenResponse;
-import com.innowise.authservice.model.dto.ValidateRequest;
-import com.innowise.authservice.model.dto.ValidationResponse;
 import com.innowise.authservice.util.TokenHasher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -114,18 +112,6 @@ public class AuthServiceImpl implements AuthService {
     public void logout(String accessToken) {
         Long userId = jwtService.extractUserIdLenient(accessToken);
         refreshTokenRepository.deleteAllByUserId(userId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ValidationResponse validate(ValidateRequest request) {
-        var claims = jwtService.validateTokenOrThrow(request.accessToken());
-        Long userId = jwtService.extractUserId(claims);
-        String role = claims.get("role", String.class);
-        if (role == null || role.isBlank()) {
-            throw new InvalidTokenException("Token is missing the 'role' claim");
-        }
-        return new ValidationResponse(userId, role);
     }
 
     private TokenResponse generateTokenPair(Long userId, String role) {

@@ -16,9 +16,6 @@ import com.innowise.authservice.model.dto.LoginResponse;
 import com.innowise.authservice.model.dto.RefreshRequest;
 import com.innowise.authservice.model.dto.SaveCredentialsRequest;
 import com.innowise.authservice.model.dto.TokenResponse;
-import com.innowise.authservice.model.dto.ValidateRequest;
-import com.innowise.authservice.model.dto.ValidationResponse;
-import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -257,60 +254,4 @@ class AuthServiceImplTest {
         verifyNoInteractions(refreshTokenRepository);
     }
 
-    @Test
-    void validate_shouldReturnUserIdAndRole() {
-        Claims claims = mock(Claims.class);
-        when(claims.get("role", String.class)).thenReturn("ADMIN");
-        when(jwtService.validateTokenOrThrow("valid.token")).thenReturn(claims);
-        when(jwtService.extractUserId(claims)).thenReturn(42L);
-
-        ValidationResponse response = authService.validate(new ValidateRequest("valid.token"));
-
-        assertThat(response.userId()).isEqualTo(42L);
-        assertThat(response.role()).isEqualTo("ADMIN");
-    }
-
-    @Test
-    void validate_shouldThrow_whenRoleMissing() {
-        Claims claims = mock(Claims.class);
-        when(claims.get("role", String.class)).thenReturn(null);
-        when(jwtService.validateTokenOrThrow("missing-role.token")).thenReturn(claims);
-        when(jwtService.extractUserId(claims)).thenReturn(42L);
-
-        ValidateRequest request = new ValidateRequest("missing-role.token");
-        assertThatThrownBy(() -> authService.validate(request))
-                .isInstanceOf(InvalidTokenException.class);
-    }
-
-    @Test
-    void validate_shouldThrow_whenRoleBlank() {
-        Claims claims = mock(Claims.class);
-        when(claims.get("role", String.class)).thenReturn(" ");
-        when(jwtService.validateTokenOrThrow("blank-role.token")).thenReturn(claims);
-        when(jwtService.extractUserId(claims)).thenReturn(42L);
-
-        ValidateRequest request = new ValidateRequest("blank-role.token");
-        assertThatThrownBy(() -> authService.validate(request))
-                .isInstanceOf(InvalidTokenException.class);
-    }
-
-    @Test
-    void validate_shouldThrow_whenTokenInvalid() {
-        when(jwtService.validateTokenOrThrow("bad.token"))
-                .thenThrow(new InvalidTokenException("Invalid token: bad signature"));
-
-        ValidateRequest request = new ValidateRequest("bad.token");
-        assertThatThrownBy(() -> authService.validate(request))
-                .isInstanceOf(InvalidTokenException.class);
-    }
-
-    @Test
-    void validate_shouldThrow_whenTokenExpired() {
-        when(jwtService.validateTokenOrThrow("expired.token"))
-                .thenThrow(new TokenExpiredException("Token has expired"));
-
-        ValidateRequest request = new ValidateRequest("expired.token");
-        assertThatThrownBy(() -> authService.validate(request))
-                .isInstanceOf(TokenExpiredException.class);
-    }
 }

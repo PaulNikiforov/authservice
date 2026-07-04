@@ -5,13 +5,10 @@ import com.innowise.authservice.model.dto.LoginResponse;
 import com.innowise.authservice.model.dto.RefreshRequest;
 import com.innowise.authservice.model.dto.SaveCredentialsRequest;
 import com.innowise.authservice.model.dto.TokenResponse;
-import com.innowise.authservice.model.dto.ValidateRequest;
-import com.innowise.authservice.model.dto.ValidationResponse;
 
 /**
- * Core authentication operations: credential storage, login, token rotation, logout and
- * access-token validation. Implemented by
- * {@code com.innowise.authservice.service.impl.AuthServiceImpl}.
+ * Core authentication operations: credential storage, login, token rotation and logout.
+ * Implemented by {@code com.innowise.authservice.service.impl.AuthServiceImpl}.
  *
  * <p>Auth Service is not the source of truth for user identity (that is the User Service);
  * it owns only credentials and refresh tokens. Refresh tokens are stored as SHA-256 hashes,
@@ -61,15 +58,4 @@ public interface AuthService {
      * @param accessToken the bearer access token identifying the user
      */
     void logout(String accessToken);
-
-    /**
-     * Validates an access token and returns its {@code userId} and {@code role}. Used by the
-     * API Gateway to authorize incoming requests.
-     *
-     * @throws com.innowise.authservice.exception.InvalidTokenException if the token is malformed
-     *         or its signature is invalid (mapped to {@code 401 Unauthorized})
-     * @throws com.innowise.authservice.exception.TokenExpiredException if the token has expired
-     *         (mapped to {@code 401 Unauthorized})
-     */
-    ValidationResponse validate(ValidateRequest request);
 }
