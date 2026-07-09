@@ -6,10 +6,6 @@ import java.security.Key;
 import java.security.KeyPair;
 import java.util.Base64;
 
-/**
- * Generates a fresh RSA key pair PEM-encoded for tests that need real
- * {@code JwtProperties} private/public key material (PKCS8/X.509).
- */
 public final class RsaTestKeys {
 
     private RsaTestKeys() {

@@ -17,13 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Base class for SCC-generated provider verification tests in auth-service.
- *
- * <p>Creates a known credential in {@code setUp()} so that login and credentials
- * contracts can succeed against a real database. The email/password here MUST
- * match the concrete values used in the corresponding {@code .groovy} contract files.
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)

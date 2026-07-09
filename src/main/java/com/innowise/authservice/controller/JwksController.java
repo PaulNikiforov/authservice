@@ -11,12 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Publishes the service's RSA public key as a JWK Set so resource servers can validate
- * access tokens locally. jjwt's {@link JwkSet} embeds internal supplier wrappers that a
- * generic Jackson {@code ObjectMapper} cannot serialize, so it is serialized explicitly
- * via jjwt's own {@link JacksonSerializer} rather than returned as the response body directly.
- */
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "JWKS", description = "Public key discovery for JWT verification")

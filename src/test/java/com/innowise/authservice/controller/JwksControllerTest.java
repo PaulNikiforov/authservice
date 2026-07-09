@@ -1,4 +1,3 @@
-// FILE: src/test/java/com/innowise/authservice/controller/JwksControllerTest.java
 package com.innowise.authservice.controller;
 
 import com.innowise.authservice.config.SecurityConfig;
