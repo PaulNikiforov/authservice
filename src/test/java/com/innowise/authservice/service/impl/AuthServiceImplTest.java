@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -48,7 +49,8 @@ class AuthServiceImplTest {
 
         authService = new AuthServiceImpl(
                 credentialRepository, refreshTokenRepository,
-                jwtService, passwordEncoder, new JwtProperties("test-private-key", "test-public-key", "test-key-id", 0L, 604_800_000L)
+                jwtService, passwordEncoder, Clock.systemUTC(),
+                new JwtProperties("test-private-key", "test-public-key", "test-key-id", 0L, 604_800_000L)
         );
 
         when(jwtService.generateAccessToken(any(), any())).thenReturn("access.token");

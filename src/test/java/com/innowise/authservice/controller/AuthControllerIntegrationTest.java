@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -143,7 +144,7 @@ class AuthControllerIntegrationTest {
 
             String tokenHash = TokenHasher.sha256Hex(refreshToken);
             RefreshToken token = refreshTokenRepository.findByTokenHash(tokenHash).orElseThrow();
-            token.setExpiresAt(LocalDateTime.now().minusHours(1));
+            token.setExpiresAt(LocalDateTime.now(ZoneOffset.UTC).minusHours(1));
             refreshTokenRepository.save(token);
 
             performRefresh(refreshToken)

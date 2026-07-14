@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -33,17 +34,20 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final Clock clock;
     private final long refreshExpiration;
 
     public AuthServiceImpl(CredentialRepository credentialRepository,
                            RefreshTokenRepository refreshTokenRepository,
                            JwtService jwtService,
                            PasswordEncoder passwordEncoder,
+                           Clock clock,
                            JwtProperties jwtProperties) {
         this.credentialRepository = credentialRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.clock = clock;
         this.refreshExpiration = jwtProperties.refreshExpiration();
     }
 
@@ -91,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
         RefreshToken existing = refreshTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 
-        if (existing.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (existing.getExpiresAt().isBefore(LocalDateTime.now(clock))) {
             throw new TokenExpiredException("Refresh token has expired");
         }
 
@@ -130,6 +134,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private LocalDateTime calculateRefreshExpiresAt() {
-        return LocalDateTime.now().plus(refreshExpiration, ChronoUnit.MILLIS);
+        return LocalDateTime.now(clock).plus(refreshExpiration, ChronoUnit.MILLIS);
     }
 }
