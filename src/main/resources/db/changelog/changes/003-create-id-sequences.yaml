@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-id-sequences
+      author: authservice
+      changes:
+        - createSequence:
+            sequenceName: credentials_id_seq
+            startValue: 1
+            incrementBy: 50
+        - createSequence:
+            sequenceName: refresh_tokens_id_seq
+            startValue: 1
+            incrementBy: 50
