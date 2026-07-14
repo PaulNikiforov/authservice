@@ -1,8 +1,8 @@
 package com.innowise.authservice.contract;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.innowise.authservice.AuthserviceApplication;
 import com.innowise.authservice.TestcontainersConfiguration;
-import com.innowise.authservice.model.dto.SaveCredentialsRequest;
 import com.innowise.authservice.repository.CredentialRepository;
 import com.innowise.authservice.repository.RefreshTokenRepository;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -11,13 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest
+@SpringBootTest(classes = AuthserviceApplication.class)
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 public abstract class BaseContractTest {
@@ -27,10 +23,10 @@ public abstract class BaseContractTest {
     static final String CONTRACT_PASS    = "ContractPass1!";
 
     @Autowired
-    private MockMvc mockMvc;
+    protected MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    protected ObjectMapper objectMapper;
 
     @Autowired
     private CredentialRepository credentialRepository;
@@ -39,17 +35,9 @@ public abstract class BaseContractTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         refreshTokenRepository.deleteAll();
         credentialRepository.deleteAll();
-
-        String body = objectMapper.writeValueAsString(
-                new SaveCredentialsRequest(CONTRACT_USER_ID, CONTRACT_EMAIL, CONTRACT_PASS));
-
-        mockMvc.perform(post("/api/v1/auth/credentials")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isCreated());
 
         RestAssuredMockMvc.mockMvc(mockMvc);
     }

@@ -213,6 +213,10 @@
 							<baseClassFQN>com.innowise.authservice.contract.BaseValidateContractTest</baseClassFQN>
 						</baseClassMapping>
 						<baseClassMapping>
+							<contractPackageRegex>.*login.*</contractPackageRegex>
+							<baseClassFQN>com.innowise.authservice.contract.BaseLoginContractTest</baseClassFQN>
+						</baseClassMapping>
+						<baseClassMapping>
 							<contractPackageRegex>.*</contractPackageRegex>
 							<baseClassFQN>com.innowise.authservice.contract.BaseContractTest</baseClassFQN>
 						</baseClassMapping>

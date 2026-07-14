@@ -26,7 +26,7 @@ class SecurityConfigTest {
 
     @Test
     void authEndpoints_shouldNotReturn401() throws Exception {
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
